@@ -1,0 +1,22 @@
+{
+	"$schema": "https://unpkg.com/knip@6/schema.json",
+	"entry": [
+		"src/router.tsx",
+		"src/routes/**/*.{ts,tsx}",
+		"public/sw.js"
+	],
+	"project": ["src/**/*.{ts,tsx}", "scripts/**/*.mjs"],
+	"ignore": [
+		"src/generated/**",
+		"src/components/ui/**"
+	],
+	"ignoreDependencies": [
+		"tailwindcss",
+		"@tailwindcss/typography",
+		"tw-animate-css",
+		"@tanstack/router-plugin",
+		"@testing-library/dom",
+		"@testing-library/react"
+	],
+	"tags": ["-public"]
+}

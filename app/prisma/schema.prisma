@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Better Auth models — see https://www.better-auth.com/docs/concepts/database#core-schema
+// Field names match the Better Auth defaults; do not rename without also configuring
+// the adapter's `fields` mapping.
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+  budget        Budget?
+  expenses      Expense[]
+
+  @@map("user")
+}
+
+// One row per user: the user's monthly budget. Single row, updated in place.
+// No history of changes — mid-cycle edits apply retroactively (PRODUCT.md).
+model Budget {
+  userId             String   @id
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  monthlyAmountCents Int
+  anchorDay          Int
+  updatedAt          DateTime @updatedAt
+
+  @@map("budget")
+}
+
+// Many rows per user. Append-only in MVP: `createdAt` is set at submission
+// time and never edited (no backdated entry). `amountCents` is always
+// positive; the daily-available math derives spend from the sum. Deletes are
+// hard deletes — the row is physically removed.
+model Expense {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amountCents Int
+  note        String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("expense")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
