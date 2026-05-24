@@ -8,24 +8,26 @@ This is a monorepo with a single application at `app/`. All commands below assum
 
 ## Common commands (run from `app/`)
 
+The package manager is **pnpm** (`pnpm-lock.yaml`, `packageManager` field). Node ≥ 20.19 is required (Prisma 7); `app/.nvmrc` pins 22.
+
 ```bash
-npm run dev          # vite dev server on port 3000
-npm run build        # vite production build
-npm run preview      # preview production build
-npm run test         # vitest run (one-shot, not watch)
-npm run lint         # biome lint
-npm run format       # biome format
-npm run check        # biome check (lint + format + organize imports)
+pnpm dev             # vite dev server on port 3000
+pnpm build           # vite production build
+pnpm preview         # preview production build
+pnpm test            # vitest run (one-shot, not watch)
+pnpm lint            # biome lint
+pnpm format          # biome format
+pnpm check           # biome check (lint + format + organize imports)
 
 # Prisma — all wrapped in `dotenv -e .env.local --` so DATABASE_URL is loaded
-npm run db:generate  # prisma generate (writes to src/generated/prisma)
-npm run db:push      # prisma db push
-npm run db:migrate   # prisma migrate dev
-npm run db:studio    # prisma studio
-npm run db:seed      # tsx prisma/seed.ts (configured via prisma.config.ts)
+pnpm db:generate     # prisma generate (writes to src/generated/prisma)
+pnpm db:push         # prisma db push
+pnpm db:migrate      # prisma migrate dev
+pnpm db:studio       # prisma studio
+pnpm db:seed         # tsx prisma/seed.ts (configured via prisma.config.ts)
 ```
 
-Run a single Vitest file/test: `npx vitest run path/to/file.test.ts -t "test name"`.
+Run a single Vitest file/test: `pnpm exec vitest run path/to/file.test.ts -t "test name"`.
 
 ## Architecture
 
@@ -40,19 +42,19 @@ Run a single Vitest file/test: `npx vitest run path/to/file.test.ts -t "test nam
 2. **TanStack Query** — set up in `src/integrations/tanstack-query/root-provider.tsx`; SSR-wired via `setupRouterSsrQueryIntegration` in `src/router.tsx`. The same QueryClient is shared with tRPC.
 3. **@tanstack/react-db** (`src/db-collections/`) — client-side reactive collections (currently a `localOnlyCollectionOptions` example). Use for optimistic/local state, not as a substitute for tRPC server calls.
 
-**Prisma** (`src/db.ts`) uses the new `prisma-client` generator with `@prisma/adapter-pg` (Postgres). The generated client is committed under `src/generated/prisma/` and imported as `./generated/prisma/client.js` — run `npm run db:generate` after editing `prisma/schema.prisma`. A `globalThis.__prisma` singleton prevents connection storms during dev HMR.
+**Prisma** (`src/db.ts`) uses the new `prisma-client` generator with `@prisma/adapter-pg` (Postgres). The generated client is committed under `src/generated/prisma/` and imported as `./generated/prisma/client.js` — run `pnpm db:generate` after editing `prisma/schema.prisma`. A `globalThis.__prisma` singleton prevents connection storms during dev HMR.
 
 **Auth: Better Auth** (`src/lib/auth.ts`, `src/lib/auth-client.ts`) with `tanstackStartCookies()`, mounted at `src/routes/api/auth/$.ts`. Email+password is enabled; the secret comes from `BETTER_AUTH_SECRET` in `.env.local` (generate via `npx -y @better-auth/cli secret`).
 
 ## Working on this app
 
-- **Always run the app yourself** to verify a change actually works — `npm run dev` from `app/` and exercise the affected flow in the browser. Type checks and unit tests don't count as verification for UI or end-to-end behaviour. If you genuinely can't run it (no browser available, env not set up), say so explicitly rather than claiming the change works.
-- **Create your own test accounts when you need them.** Sign up via the running app, log in, and seed any needed state through the UI or `npm run db:seed`. Don't ask the user for credentials.
+- **Always run the app yourself** to verify a change actually works — `pnpm dev` from `app/` and exercise the affected flow in the browser. Type checks and unit tests don't count as verification for UI or end-to-end behaviour. If you genuinely can't run it (no browser available, env not set up), say so explicitly rather than claiming the change works.
+- **Create your own test accounts when you need them.** Sign up via the running app, log in, and seed any needed state through the UI or `pnpm db:seed`. Don't ask the user for credentials.
 - **UI components must come from shadcn/ui.** Add new ones with `pnpm dlx shadcn@latest add <component>` (registered in `components.json`, aliased to `#/components/ui`). Don't hand-roll buttons, inputs, dialogs, etc., and don't pull in another component library. Compose shadcn primitives; only write custom components when no shadcn equivalent exists.
 
 ## Conventions
 
 - **Biome** is the only formatter/linter (no ESLint/Prettier). Config: tabs for indent, double quotes for JS strings, auto-organize-imports. `src/routeTree.gen.ts` and `src/styles.css` are intentionally excluded.
-- **shadcn/ui** (new-york style, zinc base, lucide icons) — config in `components.json`, aliased to `#/components/ui`. Add components with the latest CLI: `pnpm dlx shadcn@latest add <component>` (per `app/.cursorrules`; the rest of the project uses npm, but shadcn's CLI is invoked via `pnpm dlx`).
+- **shadcn/ui** (new-york style, zinc base, lucide icons) — config in `components.json`, aliased to `#/components/ui`. Add components with the latest CLI: `pnpm dlx shadcn@latest add <component>` (per `app/.cursorrules`).
 - **Tailwind v4** via `@tailwindcss/vite` — there is no `tailwind.config.*`; configuration lives in `src/styles.css`.
 - TypeScript is strict with `noUnusedLocals`, `noUnusedParameters`, and `verbatimModuleSyntax` — keep `import type` separate from value imports.

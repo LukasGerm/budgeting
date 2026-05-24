@@ -2,6 +2,7 @@
   "name": "app",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.11.0",
   "engines": {
     "node": ">=20.19"
   },
@@ -76,8 +77,11 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
       "esbuild",
-      "lightningcss"
+      "lightningcss",
+      "prisma"
     ]
   }
 }

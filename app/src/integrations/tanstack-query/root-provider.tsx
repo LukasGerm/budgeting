@@ -1,4 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
+import { createIsomorphicFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { createTRPCClient, httpBatchStreamLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import type { ReactNode } from "react";
@@ -14,24 +16,33 @@ function getUrl() {
 	return `${base}/api/trpc`;
 }
 
+/**
+ * The `Cookie` header to attach to SSR tRPC requests.
+ *
+ * During SSR the route loaders call tRPC over HTTP *from the server*, so —
+ * unlike a browser fetch — the Better Auth cookie isn't attached for us.
+ * Reading the inbound request's cookie and forwarding it lets protected
+ * procedures see the same session the server-fn guards (`getServerSession`) do;
+ * without it, every hard load of an authed route 401s on the server even for a
+ * perfectly valid session.
+ *
+ * `createIsomorphicFn` is required (not a `typeof window` branch): it lets the
+ * TanStack Start compiler strip the `.server()` body — and the server-only
+ * `getRequest` import it uses — out of the client bundle, which the
+ * `import-protection` plugin otherwise rejects at build time. On the client the
+ * header is "" because the browser attaches cookies to the same-origin request.
+ */
+const getSsrCookie = createIsomorphicFn()
+	.client(() => "")
+	.server(() => getRequest()?.headers.get("cookie") ?? "");
+
 export const trpcClient = createTRPCClient<TRPCRouter>({
 	links: [
 		httpBatchStreamLink({
 			transformer: superjson,
 			url: getUrl(),
-			/**
-			 * During SSR the route loaders call tRPC over HTTP *from the server*, so
-			 * unlike a browser fetch the Better Auth cookie isn't attached for us.
-			 * Forward the inbound request's `Cookie` header here so protected
-			 * procedures see the same session the server-fn guards (`getServerSession`)
-			 * do — without this, every hard load of an authed route 401s on the
-			 * server even for a perfectly valid session. On the client we return
-			 * nothing; the browser attaches cookies to the same-origin request itself.
-			 */
-			async headers() {
-				if (typeof window !== "undefined") return {};
-				const { getRequest } = await import("@tanstack/react-start/server");
-				const cookie = getRequest()?.headers.get("cookie");
+			headers() {
+				const cookie = getSsrCookie();
 				return cookie ? { cookie } : {};
 			},
 		}),
