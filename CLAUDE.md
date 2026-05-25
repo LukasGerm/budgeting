@@ -12,7 +12,8 @@ The package manager is **pnpm** (`pnpm-lock.yaml`, `packageManager` field). Node
 
 ```bash
 pnpm dev             # vite dev server on port 3000
-pnpm build           # vite production build
+pnpm build           # vite production build → .output (Nitro, self-contained)
+pnpm start           # run the built server: node .output/server/index.mjs
 pnpm preview         # preview production build
 pnpm test            # vitest run (one-shot, not watch)
 pnpm lint            # biome lint
@@ -45,6 +46,8 @@ Run a single Vitest file/test: `pnpm exec vitest run path/to/file.test.ts -t "te
 **Prisma** (`src/db.ts`) uses the new `prisma-client` generator with `@prisma/adapter-pg` (Postgres). The generated client is committed under `src/generated/prisma/` and imported as `./generated/prisma/client.js` — run `pnpm db:generate` after editing `prisma/schema.prisma`. A `globalThis.__prisma` singleton prevents connection storms during dev HMR.
 
 **Auth: Better Auth** (`src/lib/auth.ts`, `src/lib/auth-client.ts`) with `tanstackStartCookies()`, mounted at `src/routes/api/auth/$.ts`. Email+password is enabled; the secret comes from `BETTER_AUTH_SECRET` in `.env.local` (generate via `npx -y @better-auth/cli secret`).
+
+**Hosting: Nitro** (`nitro/vite` plugin in `vite.config.ts`, after `tanstackStart()`). Without it, `vite build` only emits a `fetch` handler with no listening server. With it, the build produces a self-contained `.output/server/index.mjs` (it bundles its own deps + serves the static client), run via `pnpm start`. `app/Dockerfile` is a two-stage build (pnpm install + build → copy `.output` into a bare `node:22-slim` runtime). The container needs `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` at runtime; build context is `app/`.
 
 ## Working on this app
 
