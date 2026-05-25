@@ -7,7 +7,12 @@ import {
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { Toaster } from "#/components/ui/sonner";
 import type { TRPCRouter } from "#/integrations/trpc/router";
-import appCss from "../styles.css?url";
+// Side-effect import (not `?url`): lets TanStack Start inject the stylesheet
+// <link> from the *client* manifest. The `?url` form bakes in the SSR build's
+// own CSS hash, which diverges from the client hash on some build platforms
+// (e.g. the Linux Docker build) → the SSR <link> 404s and styles only appear
+// after client hydration.
+import "../styles.css";
 
 interface MyRouterContext {
 	queryClient: QueryClient;
@@ -40,10 +45,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			{ name: "apple-mobile-web-app-title", content: "Budget" },
 		],
 		links: [
-			{
-				rel: "stylesheet",
-				href: appCss,
-			},
 			// Web app manifest (contents in public/manifest.json).
 			{ rel: "manifest", href: "/manifest.json" },
 			// iOS home-screen icon.
