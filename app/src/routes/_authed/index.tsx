@@ -20,6 +20,13 @@ export const Route = createFileRoute("/_authed/")({
 	// cache so the suspense queries below resolve from cache on first paint
 	// (SSR), hydrating with no loading flash. `startOfDay` keys the expense
 	// query identically to the component so the prefetched entry is hit.
+	//
+	// `now` is computed here and returned so the component reads the *same*
+	// value (via `useLoaderData`) on both the server render and client
+	// hydration. Computing `new Date()` in the component instead diverges
+	// between the server (UTC) and the browser (local TZ): a different expense
+	// query key (so the SSR-prefetched data is missed) and different rendered
+	// amounts/date → React hydration error #418 and a stale client UI.
 	loader: async ({ context }) => {
 		const now = startOfDay(new Date());
 		await withLoginRedirect(() =>
@@ -32,6 +39,7 @@ export const Route = createFileRoute("/_authed/")({
 				),
 			]),
 		);
+		return { now };
 	},
 	component: Home,
 });
@@ -43,7 +51,8 @@ function byNewest(a: Expense, b: Expense): number {
 
 function Home() {
 	const { user } = Route.useRouteContext();
-	const now = new Date();
+	// From the loader (see above) so SSR and client hydration agree on `now`.
+	const { now } = Route.useLoaderData();
 	const budget = useBudget();
 	const expenses = useExpenses(now);
 

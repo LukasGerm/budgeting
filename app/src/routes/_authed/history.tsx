@@ -22,6 +22,10 @@ import {
 import { withLoginRedirect } from "#/lib/loader-auth";
 
 export const Route = createFileRoute("/_authed/history")({
+	// `now` is returned so the component reads the same value on the server
+	// render and client hydration (see the note in `_authed/index.tsx`): a
+	// component-side `new Date()` diverges between server (UTC) and browser
+	// (local TZ) → mismatched query key + hydration error #418.
 	loader: async ({ context }) => {
 		const now = startOfDay(new Date());
 		await withLoginRedirect(() =>
@@ -29,6 +33,7 @@ export const Route = createFileRoute("/_authed/history")({
 				context.trpc.expense.listForCurrentCycle.queryOptions({ now }),
 			),
 		);
+		return { now };
 	},
 	component: HistoryPage,
 });
@@ -39,7 +44,7 @@ function byNewest(a: Expense, b: Expense): number {
 }
 
 function HistoryPage() {
-	const now = new Date();
+	const { now } = Route.useLoaderData();
 	const expenses = [...useExpenses(now)].sort(byNewest);
 	const deleteExpense = useDeleteExpense();
 
