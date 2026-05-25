@@ -29,23 +29,9 @@ export type KeypadKey =
 	| "."
 	| "backspace";
 
-const DIGIT_KEYS: KeypadKey[] = [
-	"1",
-	"2",
-	"3",
-	"4",
-	"5",
-	"6",
-	"7",
-	"8",
-	"9",
-];
+const DIGIT_KEYS: KeypadKey[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
-export function NumericKeypad({
-	onKey,
-}: {
-	onKey: (key: KeypadKey) => void;
-}) {
+export function NumericKeypad({ onKey }: { onKey: (key: KeypadKey) => void }) {
 	return (
 		<div className="grid grid-cols-3 gap-2">
 			{DIGIT_KEYS.map((key) => (
@@ -64,9 +50,11 @@ export function NumericKeypad({
 				variant="ghost"
 				className="h-14 font-medium text-2xl"
 				onClick={() => onKey(".")}
-				aria-label="Decimal point"
+				aria-label="Decimal separator"
 			>
-				.
+				{/* German decimal separator (de-DE). The key still emits the canonical
+				    "." that `Money.fromDecimalString` parses; only the label is localised. */}
+				,
 			</Button>
 			<Button
 				type="button"
