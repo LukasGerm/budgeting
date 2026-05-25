@@ -34,7 +34,9 @@ export function BottomNav() {
 	return (
 		<nav
 			aria-label="Primary"
-			className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+			// `pb-[env(safe-area-inset-bottom)]` lets the bar's background fill the
+			// iOS home-indicator area while the tab items sit above it.
+			className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-background/80"
 		>
 			<ul className="mx-auto flex max-w-md items-stretch justify-around">
 				{TABS.map((tab) => {

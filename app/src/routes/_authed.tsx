@@ -73,7 +73,16 @@ function AuthedLayout() {
 	const showNav = pathname !== "/onboarding";
 
 	return (
-		<div className={cn("flex min-h-svh flex-col", showNav && "pb-16")}>
+		<div
+			className={cn(
+				// `pt-[env(safe-area-inset-top)]` keeps the header clear of the iOS
+				// status bar (the web view renders under it in a standalone PWA).
+				"flex min-h-svh flex-col pt-[env(safe-area-inset-top)]",
+				// Clearance for the fixed bottom nav, plus the home-indicator inset
+				// the nav now extends into.
+				showNav && "pb-[calc(4rem_+_env(safe-area-inset-bottom))]",
+			)}
+		>
 			<Outlet />
 			{showNav ? <BottomNav /> : null}
 		</div>

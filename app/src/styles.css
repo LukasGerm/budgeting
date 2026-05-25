@@ -163,6 +163,14 @@ body,
   min-height: 100%;
 }
 
+/* Paint the root the app's base colour. In an iOS home-screen (standalone) PWA
+   the web view extends under the status bar and home indicator (viewport-fit=
+   cover); without this the uncovered safe-area regions show the web view's
+   default white. */
+html {
+  background-color: var(--bg-base);
+}
+
 body {
   margin: 0;
   color: var(--sea-ink);
