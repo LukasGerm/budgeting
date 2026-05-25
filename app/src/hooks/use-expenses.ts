@@ -7,12 +7,15 @@
  * (a `Money` amount) at this hook boundary. Components only ever see domain
  * shapes; the wire only ever sees cents.
  *
- * The current cycle is a *local* notion, so the query input carries a `now` —
- * but we key it on the **start of the local day** (`startOfDay`) so the cache
- * key is stable across renders and the server prefetch and client hydration
- * agree on the same key (a raw `Date` would differ every render and thrash the
- * cache / miss the SSR-prefetched entry). A new calendar day naturally produces
- * a new key, shifting the list to the new cycle.
+ * The current cycle is anchored to a `now` that the **route loader** computes
+ * once (`startOfDay(new Date())`) and passes to the component. `useExpenses`
+ * uses that value *verbatim* as the query input — it must NOT re-apply
+ * `startOfDay`, because `startOfDay` reads local date parts: re-deriving it on
+ * the client (browser TZ) from the loader's value (server TZ) yields a
+ * different instant → a different query key than the SSR prefetch → the client
+ * misses the hydrated entry, refetches, and the SSR/client renders disagree
+ * (React hydration error #418 + a stale list). The loader is the single source
+ * of `now` so server and client key the query identically.
  *
  * Adds and deletes invalidate the list so the home daily/monthly numbers
  * recompute from the new total.
@@ -33,17 +36,26 @@ export interface NewExpense {
 	note?: string;
 }
 
-/** Local midnight of `now`, used as the stable query input for the cycle. */
+/**
+ * Local midnight of `now`. Call this **only in the route loader** to derive the
+ * cycle anchor once; pass the result through to `useExpenses`. Do not call it in
+ * a component — see the file header (re-deriving it client-side breaks the key).
+ */
 export function startOfDay(now: Date): Date {
 	return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
-/** The current cycle's expenses, mapped from wire cents to domain `Expense`. */
+/**
+ * The current cycle's expenses, mapped from wire cents to domain `Expense`.
+ *
+ * `now` must be the loader-provided cycle anchor; it is used verbatim as the
+ * query input so the SSR prefetch and client hydration share one key.
+ */
 export function useExpenses(now: Date): Expense[] {
 	const trpc = useTRPC();
 	const { data } = useSuspenseQuery(
 		trpc.expense.listForCurrentCycle.queryOptions(
-			{ now: startOfDay(now) },
+			{ now },
 			{
 				select: (rows) =>
 					rows.map((row) => ({
