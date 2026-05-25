@@ -33,6 +33,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 # Nitro listens on PORT (default 3000); the platform overrides it.
 ENV PORT=3000
+# Run the server in the user's timezone so server-side date math (the cycle's
+# "today" / start-of-day) matches the browser. Otherwise the SSR loader (UTC)
+# and the client-navigation loader (browser TZ) compute different cycle query
+# keys for the same day → the expense list splits across two cache entries and
+# goes stale on client navigation. node:22-slim ships full-ICU, so named zones
+# work without extra packages.
+ENV TZ=Europe/Berlin
 EXPOSE 3000
 
 COPY --from=builder /app/.output ./.output
