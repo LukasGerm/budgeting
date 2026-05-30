@@ -3,10 +3,41 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { PacePoint } from "#/domain";
-import { PaceLineChart } from "./pace-line-chart";
+import { formatAxisCents, PaceLineChart } from "./pace-line-chart";
 
 afterEach(() => {
 	document.body.innerHTML = "";
+});
+
+describe("formatAxisCents", () => {
+	it("renders zero as €0", () => {
+		expect(formatAxisCents(0)).toBe("€0");
+	});
+
+	it("renders values under €1 000 as whole euros", () => {
+		expect(formatAxisCents(50000)).toBe("€500"); // €500
+		expect(formatAxisCents(99900)).toBe("€999"); // €999
+		expect(formatAxisCents(100)).toBe("€1"); // €1
+		expect(formatAxisCents(150)).toBe("€1"); // €1.50 truncates to €1, not €2
+	});
+
+	it("renders €1 000–€9 999 with one decimal and k (comma separator)", () => {
+		expect(formatAxisCents(100000)).toBe("€1,0k"); // €1 000 — first k value
+		expect(formatAxisCents(123400)).toBe("€1,2k"); // €1 234
+		expect(formatAxisCents(200000)).toBe("€2,0k"); // €2 000
+		expect(formatAxisCents(999900)).toBe("€10,0k"); // €9 999 — rounds up to 10,0k
+	});
+
+	it("renders €10 000+ as whole thousands with k, no decimal", () => {
+		expect(formatAxisCents(1000000)).toBe("€10k"); // €10 000
+		expect(formatAxisCents(1234500)).toBe("€12k"); // €12 345
+	});
+
+	it("handles negatives symmetrically", () => {
+		expect(formatAxisCents(-50000)).toBe("-€500");
+		expect(formatAxisCents(-123400)).toBe("-€1,2k");
+		expect(formatAxisCents(-1234500)).toBe("-€12k");
+	});
 });
 
 function points(n: number): PacePoint[] {

@@ -45,6 +45,43 @@ import {
 } from "#/components/ui/chart";
 import { Money, type PacePoint } from "#/domain";
 
+/**
+ * Compact Y-axis tick label for integer-cent values.
+ *
+ * Rules (using de-DE `,` as decimal separator):
+ *   |cents| <  100_000  (< €1 000) → `€N`           e.g. `€999`
+ *   |cents| < 1_000_000 (< €10 000) → `€N,Dk`       e.g. `€1,2k`
+ *   |cents| ≥ 1_000_000 (≥ €10 000) → `€Nk`         e.g. `€12k`
+ *
+ * Negatives are handled symmetrically with a leading `-` before `€`.
+ */
+export function formatAxisCents(cents: number): string {
+	const sign = cents < 0 ? "-" : "";
+	const abs = Math.abs(cents);
+	// Convert to whole euros (truncate, not round, to stay conservative).
+	const euros = Math.trunc(abs / 100);
+
+	if (abs < 100_000) {
+		// Under €1 000: show whole euros, no k suffix.
+		return `${sign}€${euros}`;
+	}
+
+	const thousands = abs / 100_000; // in units of €1 000
+	if (abs < 1_000_000) {
+		// €1 000 – €9 999: one decimal place + k, using comma separator.
+		const formatted = thousands.toFixed(1).replace(".", ",");
+		return `${sign}€${formatted}k`;
+	}
+
+	// €10 000+: whole thousands + k, no decimal.
+	// Note: the €9 999→€10 000 seam (€10,0k vs €10k) is unreachable in practice
+	// because Recharts generates "nice" round axis ticks that skip that boundary.
+	// Truncation (not rounding) is intentional — matches divideIntFloor/toDecimalString
+	// conservative behaviour in the domain layer; do not change to Math.round.
+	const wholeThousands = Math.trunc(abs / 100_000);
+	return `${sign}€${wholeThousands}k`;
+}
+
 const CHART_HEIGHT = "h-[220px]";
 
 const chartConfig = {
@@ -129,8 +166,8 @@ export function PaceLineChart({ series }: PaceLineChartProps) {
 							<YAxis
 								tickLine={false}
 								axisLine={false}
-								width={48}
-								tickFormatter={(v) => Money.fromCents(Number(v)).format()}
+								width={56}
+								tickFormatter={(v) => formatAxisCents(Number(v))}
 							/>
 							<ChartTooltip
 								content={
