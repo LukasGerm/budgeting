@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { ExpenseRow } from "#/components/expense-row";
 import { SpendSheet } from "#/components/spend-sheet";
+import { StreakChip } from "#/components/streak-chip";
 import {
 	calculateAvailableToday,
 	calculateMonthlyRemaining,
@@ -13,6 +14,7 @@ import {
 } from "#/domain";
 import { useBudget } from "#/hooks/use-budget";
 import { startOfDay, useExpenses } from "#/hooks/use-expenses";
+import { useStreaks } from "#/hooks/use-streaks";
 import { withLoginRedirect } from "#/lib/loader-auth";
 
 export const Route = createFileRoute("/_authed/")({
@@ -37,6 +39,13 @@ export const Route = createFileRoute("/_authed/")({
 				context.queryClient.ensureQueryData(
 					context.trpc.expense.listForCurrentCycle.queryOptions({ now }),
 				),
+				// The streak chip reads this via `useStreaks` (useSuspenseQuery); it
+				// must be prefetched here like the others, or the un-cached suspense
+				// query has nothing to resolve against during SSR and the route falls
+				// through to TanStack Router's notFound ("<p>Not Found</p>").
+				context.queryClient.ensureQueryData(
+					context.trpc.expense.listForStreak.queryOptions({ now }),
+				),
 			]),
 		);
 		return { now };
@@ -55,6 +64,7 @@ function Home() {
 	const { now } = Route.useLoaderData();
 	const budget = useBudget();
 	const expenses = useExpenses(now);
+	const streaks = useStreaks(now);
 
 	// The _authed guard already redirected unbudgeted users to /onboarding,
 	// so a missing budget here is an unexpected race. Render a thin state.
@@ -83,9 +93,12 @@ function Home() {
 
 	return (
 		<div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-12 p-8">
-			<header className="flex flex-col gap-1">
-				<p className="text-muted-foreground text-sm">{dateLabel}</p>
-				<h1 className="font-medium text-lg">Hi, {user.email}</h1>
+			<header className="flex items-start justify-between gap-3">
+				<div className="flex flex-col gap-1">
+					<p className="text-muted-foreground text-sm">{dateLabel}</p>
+					<h1 className="font-medium text-lg">Hi, {user.email}</h1>
+				</div>
+				{streaks ? <StreakChip streaks={streaks} /> : null}
 			</header>
 
 			<section className="flex flex-1 flex-col items-center justify-center gap-4 text-center">

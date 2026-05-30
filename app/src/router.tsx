@@ -2,6 +2,7 @@ import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
 import type { ReactNode } from "react";
+import { NotFound } from "./components/not-found";
 import TanstackQueryProvider, {
 	getContext,
 } from "./integrations/tanstack-query/root-provider";
@@ -16,6 +17,9 @@ export function getRouter() {
 		scrollRestoration: true,
 		defaultPreload: "intent",
 		defaultPreloadStaleTime: 0,
+		// App-wide 404. Replaces the bare `<p>Not Found</p>` fallback and silences
+		// the dev "notFoundError on __root__, no notFoundComponent" warning.
+		defaultNotFoundComponent: NotFound,
 
 		Wrap: (props: { children: ReactNode }) => {
 			return (

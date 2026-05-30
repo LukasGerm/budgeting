@@ -6,18 +6,20 @@
  * `now`), so cycle rollover needs no special-casing: a new day produces a new
  * query key and the list shifts to the new cycle on its own.
  *
- * Tapping a row opens a confirm dialog; confirming fires `useDeleteExpense`,
- * which invalidates the shared expenses query so both this list and the home
+ * Tapping a row reopens the keypad sheet pre-filled to edit the entry; saving
+ * fires `useUpdateExpense` and the in-sheet delete fires `useDeleteExpense`.
+ * Both invalidate the shared expenses query so this list and the home
  * daily/monthly numbers recompute from the new total.
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { DeletableExpenseRow } from "#/components/expense-row";
+import { EditableExpenseRow } from "#/components/expense-row";
 import type { Expense } from "#/domain";
 import {
 	startOfDay,
 	useDeleteExpense,
 	useExpenses,
+	useUpdateExpense,
 } from "#/hooks/use-expenses";
 import { withLoginRedirect } from "#/lib/loader-auth";
 
@@ -46,6 +48,7 @@ function byNewest(a: Expense, b: Expense): number {
 function HistoryPage() {
 	const { now } = Route.useLoaderData();
 	const expenses = [...useExpenses(now)].sort(byNewest);
+	const updateExpense = useUpdateExpense();
 	const deleteExpense = useDeleteExpense();
 
 	return (
@@ -61,11 +64,13 @@ function HistoryPage() {
 				<ul className="flex flex-col divide-y">
 					{expenses.map((expense) => (
 						<li key={expense.id}>
-							<DeletableExpenseRow
+							<EditableExpenseRow
 								expense={expense}
 								now={now}
+								onUpdate={(input) => updateExpense.mutate(input)}
 								onDelete={(id) => deleteExpense.mutate({ id })}
-								disabled={deleteExpense.isPending}
+								updatePending={updateExpense.isPending}
+								deletePending={deleteExpense.isPending}
 							/>
 						</li>
 					))}

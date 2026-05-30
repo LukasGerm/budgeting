@@ -33,8 +33,8 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			{
 				title: "Budgeting",
 			},
-			// PWA / theme. Dark base (`--bg-base` in the `.dark` palette).
-			{ name: "theme-color", content: "#0a1418" },
+			// PWA / theme. Dark zinc base (matches `--background` in the `.dark` palette).
+			{ name: "theme-color", content: "#131316" },
 			// iOS standalone (home-screen) install support.
 			{ name: "mobile-web-app-capable", content: "yes" },
 			{ name: "apple-mobile-web-app-capable", content: "yes" },

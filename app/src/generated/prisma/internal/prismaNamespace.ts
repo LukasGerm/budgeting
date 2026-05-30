@@ -918,9 +918,11 @@ export type BudgetScalarFieldEnum = (typeof BudgetScalarFieldEnum)[keyof typeof 
 export const ExpenseScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  kind: 'kind',
   amountCents: 'amountCents',
   note: 'note',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type ExpenseScalarFieldEnum = (typeof ExpenseScalarFieldEnum)[keyof typeof ExpenseScalarFieldEnum]
@@ -1047,6 +1049,20 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'EntryKind'
+ */
+export type EnumEntryKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EntryKind'>
+    
+
+
+/**
+ * Reference to a field of type 'EntryKind[]'
+ */
+export type ListEnumEntryKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EntryKind[]'>
     
 
 

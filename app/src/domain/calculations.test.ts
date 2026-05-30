@@ -23,6 +23,22 @@ function expense(
 ): Expense {
 	return {
 		id,
+		kind: "spend",
+		amount: Money.fromCents(amountCents),
+		note: null,
+		createdAt: at,
+	};
+}
+
+/** An adjustment entry — `amountCents` is the *stored* signed amount. */
+function adjustment(
+	amountCents: number,
+	at: Date,
+	id = crypto.randomUUID(),
+): Expense {
+	return {
+		id,
+		kind: "adjustment",
 		amount: Money.fromCents(amountCents),
 		note: null,
 		createdAt: at,
@@ -122,6 +138,59 @@ describe("calculateAvailableToday", () => {
 		);
 		expect(got.toCents()).toBe(11_785);
 	});
+
+	it("a top-up raises available-today by its full amount immediately", () => {
+		// Day 18 → entitlement 17 419 cents, no spread. A 50 € top-up is stored
+		// as -5 000, so net spent = -5 000 → available = 17 419 + 5 000.
+		const got = calculateAvailableToday(
+			budget300_anchor1,
+			[adjustment(-5_000, local(2025, 3, 18, 9))],
+			local(2025, 3, 18),
+		);
+		expect(got.toCents()).toBe(17_419 + 5_000);
+	});
+
+	it("a set-aside lowers available-today by its full amount immediately", () => {
+		// A 50 € set-aside is stored as +5 000 → net spent 5 000 → available drops.
+		const got = calculateAvailableToday(
+			budget300_anchor1,
+			[adjustment(5_000, local(2025, 3, 18, 9))],
+			local(2025, 3, 18),
+		);
+		expect(got.toCents()).toBe(17_419 - 5_000);
+	});
+
+	it("nets a mix of spends and adjustments in the current cycle", () => {
+		// Day 18 entitlement 17 419. Spend 30 € (3 000), top-up 20 € (-2 000),
+		// set-aside 10 € (+1 000) → net spent = 3 000 - 2 000 + 1 000 = 2 000.
+		const got = calculateAvailableToday(
+			budget300_anchor1,
+			[
+				expense(3_000, local(2025, 3, 5)),
+				adjustment(-2_000, local(2025, 3, 10)),
+				adjustment(1_000, local(2025, 3, 12)),
+				// Out-of-cycle adjustment is ignored.
+				adjustment(-99_999, local(2025, 2, 14)),
+			],
+			local(2025, 3, 18),
+		);
+		expect(got.toCents()).toBe(17_419 - 2_000);
+	});
+
+	it("still goes negative when spends plus set-asides exceed entitlement", () => {
+		// Day 5 entitlement 4 838. Spend 100 € (10 000) + set-aside 20 € (+2 000)
+		// → net 12 000 → available = 4 838 - 12 000 (negative, not clamped).
+		const got = calculateAvailableToday(
+			budget300_anchor1,
+			[
+				expense(10_000, local(2025, 3, 5, 9)),
+				adjustment(2_000, local(2025, 3, 5, 10)),
+			],
+			local(2025, 3, 5),
+		);
+		expect(got.toCents()).toBe(4_838 - 12_000);
+		expect(got.isNegative()).toBe(true);
+	});
 });
 
 describe("calculateMonthlyRemaining", () => {
@@ -156,5 +225,20 @@ describe("calculateMonthlyRemaining", () => {
 		);
 		expect(got.toCents()).toBe(-10_000);
 		expect(got.isNegative()).toBe(true);
+	});
+
+	it("nets adjustments into monthly-remaining identically to available", () => {
+		// 300 € monthly. Spend 30 € (3 000), top-up 20 € (-2 000), set-aside 10 €
+		// (+1 000) → net spent 2 000 → remaining = 30 000 - 2 000.
+		const got = calculateMonthlyRemaining(
+			budget300_anchor1,
+			[
+				expense(3_000, local(2025, 3, 5)),
+				adjustment(-2_000, local(2025, 3, 10)),
+				adjustment(1_000, local(2025, 3, 12)),
+			],
+			local(2025, 3, 18),
+		);
+		expect(got.toCents()).toBe(30_000 - 2_000);
 	});
 });

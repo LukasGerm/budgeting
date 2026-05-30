@@ -1,30 +1,31 @@
 /**
- * SpendSheet — the "I just spent money" loop in a bottom sheet.
+ * SpendSheet — the "I just spent money" loop (and one-off cycle adjustments)
+ * in a bottom sheet.
  *
- * A shadcn `Drawer` (vaul, `direction="bottom"`) holds the spend form. The
- * sheet owns the entered-amount *string* the keypad builds and the optional
- * note; on submit it converts the decimal string to integer cents via the
- * pure `Money.fromDecimalString` helper and calls the `useAddExpense`
- * mutation. The mutation invalidates the expenses query, so the home daily
- * and monthly numbers recompute from the new total once the sheet closes.
+ * A shadcn `Drawer` (vaul, `direction="bottom"`) holds the keypad form. The
+ * sheet owns the `open` state and the in-progress fields (via the shared
+ * `EntryForm` reducer). A Spend / Adjust toggle picks what's being entered;
+ * on submit the keypad's decimal string becomes integer cents, and for an
+ * adjustment the stored *signed* amount is derived via `adjustmentAmountCents`
+ * (top-up negative, set-aside positive). The `useAddExpense` mutation
+ * invalidates the expenses query so the home daily/monthly numbers recompute
+ * once the sheet closes.
  *
- * The keypad is our custom `NumericKeypad` (no OS keyboard). The amount
- * preview at the top formats the live string so the user sees "12,50 €" while
- * typing. On a network failure we surface a toast and keep the sheet open
- * with the entered values intact (offline behaviour is slice 9).
- *
- * On a successful log we close the sheet and raise an undo toast. The toast
- * fires from the add mutation's `onSuccess`, so it only appears once the
- * server has confirmed the create and handed back the new id — which means by
- * the time the "Undo" action is tappable the expense definitely exists, and
- * undo is a plain delete-by-id. Tapping "Undo" deletes that expense and
- * dismisses the toast; otherwise it auto-dismisses after ~5s.
+ * On a successful add we close the sheet and raise an undo toast. The toast
+ * fires from the mutation's `onSuccess`, so it only appears once the server has
+ * confirmed the create and handed back the new id — undo is then a plain
+ * delete-by-id with no race against the create. On a network failure we keep
+ * the sheet open with the entered values intact.
  */
 
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useReducer, useState } from "react";
 import { toast } from "sonner";
-import { type KeypadKey, NumericKeypad } from "#/components/numeric-keypad";
+import {
+	EntryForm,
+	entryFormReducer,
+	initEntryForm,
+} from "#/components/entry-form";
 import { Button } from "#/components/ui/button";
 import {
 	Drawer,
@@ -34,86 +35,54 @@ import {
 	DrawerTitle,
 	DrawerTrigger,
 } from "#/components/ui/drawer";
-import { Input } from "#/components/ui/input";
-import { Money } from "#/domain";
+import { adjustmentAmountCents, Money } from "#/domain";
 import { useAddExpense, useDeleteExpense } from "#/hooks/use-expenses";
-
-/**
- * Apply a single keypad key to the current amount string, returning the next
- * string. Pure: no side effects, easy to reason about. Rejects a second dot
- * and a third fractional digit so the string is always parseable.
- */
-function applyKey(current: string, key: KeypadKey): string {
-	if (key === "backspace") {
-		return current.slice(0, -1);
-	}
-	if (key === ".") {
-		if (current.includes(".")) return current;
-		// Leading "." becomes "0." so the preview reads naturally.
-		return current === "" ? "0." : `${current}.`;
-	}
-	// A digit.
-	const dotIndex = current.indexOf(".");
-	if (dotIndex !== -1 && current.length - dotIndex > 2) {
-		// Already two fractional digits — ignore further input.
-		return current;
-	}
-	// Avoid a leading run of zeros like "007"; a single "0" is fine.
-	if (current === "0") {
-		return key;
-	}
-	return current + key;
-}
-
-/** Format the live amount string for the preview at the top of the sheet. */
-function previewAmount(amount: string): string {
-	return Money.fromDecimalString(amount).format();
-}
 
 export function SpendSheet() {
 	const [open, setOpen] = useState(false);
-	const [amount, setAmount] = useState("");
-	const [note, setNote] = useState("");
-	const [noteExpanded, setNoteExpanded] = useState(false);
+	const [form, dispatch] = useReducer(
+		entryFormReducer,
+		undefined,
+		initEntryForm,
+	);
 	const addExpense = useAddExpense();
 	const deleteExpense = useDeleteExpense();
 
-	const amountCents = Money.fromDecimalString(amount).toCents();
-	const canLog = amountCents > 0 && !addExpense.isPending;
-
-	function reset() {
-		setAmount("");
-		setNote("");
-		setNoteExpanded(false);
-	}
+	// The keypad value is always an unsigned magnitude; the sign comes from the
+	// adjustment direction below.
+	const magnitudeCents = Money.fromDecimalString(form.amount).toCents();
 
 	function handleOpenChange(next: boolean) {
 		setOpen(next);
 		// Clear values when the sheet fully closes so the next open starts fresh.
-		if (!next) reset();
-	}
-
-	function handleKey(key: KeypadKey) {
-		setAmount((current) => applyKey(current, key));
+		if (!next) dispatch({ type: "reset" });
 	}
 
 	function handleSubmit() {
-		if (!canLog) return;
-		const trimmedNote = note.trim();
+		if (magnitudeCents <= 0 || addExpense.isPending) return;
+		const trimmedNote = form.note.trim();
+		const note = trimmedNote.length > 0 ? trimmedNote : undefined;
+		const isAdjustment = form.kind === "adjustment";
+		const amountCents = isAdjustment
+			? adjustmentAmountCents(form.direction, magnitudeCents)
+			: magnitudeCents;
+		const magnitudeLabel = Money.fromCents(magnitudeCents).format();
+		const toastText = !isAdjustment
+			? `Logged ${magnitudeLabel}`
+			: form.direction === "topup"
+				? `Added ${magnitudeLabel}`
+				: `Set aside ${magnitudeLabel}`;
+
 		addExpense.mutate(
-			{
-				amountCents,
-				note: trimmedNote.length > 0 ? trimmedNote : undefined,
-			},
+			{ kind: form.kind, amountCents, note },
 			{
 				onSuccess: (created) => {
 					// Close (which resets) only on success; the daily/monthly numbers
 					// recompute as the invalidated expenses query refetches.
-					setOpen(false);
-					reset();
-					// Raise the undo toast. We have the confirmed expense id here, so
-					// "Undo" is a plain delete-by-id with no race against the create.
-					const toastId = toast(`Logged ${created.amount.format()}`, {
+					handleOpenChange(false);
+					// Raise the undo toast. We have the confirmed id here, so "Undo" is a
+					// plain delete-by-id with no race against the create.
+					const toastId = toast(toastText, {
 						duration: 5000,
 						action: {
 							label: "Undo",
@@ -126,7 +95,7 @@ export function SpendSheet() {
 				},
 				onError: () => {
 					// Keep the sheet open with the entered values preserved.
-					toast.error("Couldn't log that spend. Check your connection.");
+					toast.error("Couldn't save that. Check your connection.");
 				},
 			},
 		);
@@ -146,45 +115,23 @@ export function SpendSheet() {
 			<DrawerContent>
 				<div className="mx-auto flex w-full max-w-md flex-col gap-6 p-4 pb-8">
 					<DrawerHeader className="p-0">
-						<DrawerTitle className="sr-only">Log a spend</DrawerTitle>
+						<DrawerTitle className="sr-only">Log a spend or adjust</DrawerTitle>
 						<DrawerDescription className="sr-only">
-							Enter an amount and an optional note, then tap Log.
+							Choose Spend or Adjust, enter an amount and an optional note, then
+							confirm.
 						</DrawerDescription>
-						<p className="text-center font-semibold text-5xl tabular-nums tracking-tight">
-							{previewAmount(amount)}
-						</p>
 					</DrawerHeader>
 
-					{noteExpanded ? (
-						<Input
-							autoFocus
-							value={note}
-							onChange={(e) => setNote(e.target.value)}
-							placeholder="Note (optional)"
-							maxLength={280}
-						/>
-					) : (
-						<Button
-							type="button"
-							variant="ghost"
-							className="text-muted-foreground"
-							onClick={() => setNoteExpanded(true)}
-						>
-							{note.trim().length > 0 ? note : "Add a note"}
-						</Button>
-					)}
-
-					<NumericKeypad onKey={handleKey} />
-
-					<Button
-						type="button"
-						size="lg"
-						className="h-14 w-full text-base"
-						disabled={!canLog}
-						onClick={handleSubmit}
-					>
-						{addExpense.isPending ? "Logging…" : "Log"}
-					</Button>
+					<EntryForm
+						state={form}
+						dispatch={dispatch}
+						amountCents={magnitudeCents}
+						onSubmit={handleSubmit}
+						submitLabel={form.kind === "adjustment" ? "Add" : "Log"}
+						submittingLabel="Saving…"
+						pending={addExpense.isPending}
+						showKindToggle
+					/>
 				</div>
 			</DrawerContent>
 		</Drawer>

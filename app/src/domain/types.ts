@@ -5,6 +5,7 @@
  * the component boundary. The domain only ever sees these.
  */
 
+import type { EntryKind } from "./entry";
 import type { Money } from "./money";
 
 export interface Budget {
@@ -12,8 +13,11 @@ export interface Budget {
 	readonly anchorDay: number; // 1–31
 }
 
+// A ledger entry. `kind` discriminates a normal spend from a one-off
+// adjustment; `amount` is signed (see `entry.ts` for the convention).
 export interface Expense {
 	readonly id: string;
+	readonly kind: EntryKind;
 	readonly amount: Money;
 	readonly note: string | null;
 	readonly createdAt: Date;

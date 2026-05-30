@@ -115,6 +115,23 @@ export class Money {
 		return this.cents;
 	}
 
+	/**
+	 * Render as the bare decimal string a `NumericKeypad` builds and edits
+	 * ("12.50", "12", "0.99") — the inverse of `fromDecimalString`, used to
+	 * pre-fill the keypad when editing an existing amount. Unsigned: the keypad
+	 * holds a magnitude only, so the absolute value is rendered (callers pass a
+	 * magnitude). Zero is the empty string ("nothing entered yet").
+	 */
+	toDecimalString(): string {
+		const abs = Math.abs(this.cents);
+		if (abs === 0) return "";
+		const whole = Math.trunc(abs / 100);
+		const frac = abs % 100;
+		return frac === 0
+			? `${whole}`
+			: `${whole}.${String(frac).padStart(2, "0")}`;
+	}
+
 	isNegative(): boolean {
 		return this.cents < 0;
 	}

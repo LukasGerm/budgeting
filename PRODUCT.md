@@ -103,7 +103,7 @@ Things explicitly **not** abstracted (single implementation, no genuine variabil
 
 - **User** — managed by Better Auth (email + password, no verification, no reset for MVP).
 - **Budget** — one record per user: `monthlyAmount` (integer cents), `anchorDay` (1–31), `updatedAt`. Single row, updated in place; no history.
-- **Expense** — many per user: `id`, `userId`, `amount` (integer cents, positive), `note` (optional string), `createdAt` (timestamp set at submission time, never editable).
+- **Expense** — many per user: `id`, `userId`, `kind` (`spend` | `adjustment`), `amount` (integer cents; positive for a spend, signed for an adjustment), `note` (optional string), `createdAt` (timestamp set at submission time, never editable), `updatedAt` (records in-place edits to amount/note).
 - Money is stored as integer cents everywhere (DB, domain, wire) and only formatted to a decimal string at the UI edge.
 
 ### Sync model
@@ -135,6 +135,30 @@ Things explicitly **not** abstracted (single implementation, no genuine variabil
 - **Currency** — EUR only, hardcoded. No FX, no per-user setting.
 - **Timezone** — device local; the day boundary is local midnight; the server does not compute "today."
 - **Negative styling** — colour change to red on the daily number; sign-prefixed text ("−47 €") on the monthly line. No exclamation marks, no scolding copy.
+
+### Reversed decisions (QoL, adjustments, streaks)
+
+These three decisions reverse positions taken above/in *Out of Scope*. They are
+recorded here explicitly rather than left as silent drift (see
+`plans/2026-05-30-qol-and-streaks.md`).
+
+- **A logged entry's amount and note are editable.** Logging is no longer
+  append-only: tapping a history row reopens the keypad sheet pre-filled, and
+  amount/note can be corrected in place after the undo toast is gone (delete
+  becomes a secondary action inside that sheet). The no-backdating rule still
+  holds — `createdAt` is never editable, so an entry never moves between cycles.
+- **One-off cycle adjustments are allowed.** A top-up (reimbursement, cash gift)
+  or set-aside (wall money off) nudges the *current cycle's* available pool in
+  full, immediately. Adjustments are entries on the "spent" side of the formula
+  (a top-up is a negative adjustment, a set-aside a positive one), so they are
+  cycle-scoped and hard-reset at the anchor like spends. This is **not** income
+  tracking or recurring entries — those stay in Finanzguru and out of scope.
+- **Restraint is reflected back, quietly.** "No encouragement, just an honest
+  figure" is relaxed to allow a deliberately understated streak: a quiet header
+  chip headlines an under-rate streak (days at or below that day's daily rate),
+  with current + best for both it and a stricter no-spend streak behind a tap.
+  It never celebrates (no confetti, milestones, or copy) and a broken streak
+  resets silently to 0, preserving the honest-figure spirit.
 
 ## Testing Decisions
 
@@ -171,8 +195,8 @@ The following are **explicitly not** in MVP. Each is a reasonable future additio
 - Multi-currency, FX, or any per-user currency setting.
 - Multi-user / household / shared budgets, invite flows, attribution.
 - Multiple budgets per user (e.g. "personal" + "vacation fund").
-- Recurring expenses, scheduled expenses, income tracking, savings goals.
-- Backdated expense entry, editing the amount or note of an existing expense.
+- Recurring expenses, scheduled expenses, income tracking, savings goals. (One-off, cycle-scoped *adjustments* are now in scope — see "Reversed decisions" — but recurring/scheduled/income tracking remain out.)
+- Backdating an expense or editing its `createdAt`. (Editing the amount or note of an existing entry is now in scope — see "Reversed decisions" — but the day is still never editable.)
 - Viewing historical cycles (history is current-cycle only).
 - Multi-device conflict resolution beyond last-writer-wins; no merge UI.
 - Push notifications, reminders, end-of-day or end-of-cycle summaries.

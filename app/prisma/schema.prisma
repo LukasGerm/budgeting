@@ -38,17 +38,31 @@ model Budget {
   @@map("budget")
 }
 
-// Many rows per user. Append-only in MVP: `createdAt` is set at submission
-// time and never edited (no backdated entry). `amountCents` is always
-// positive; the daily-available math derives spend from the sum. Deletes are
-// hard deletes — the row is physically removed.
+// A ledger entry: a normal SPEND or a one-off ADJUSTMENT to the cycle's
+// available pool (a top-up or a set-aside). The sign convention lives in the
+// domain (`src/domain/entry.ts`): a spend and a set-aside store a positive
+// `amountCents`, a top-up stores a negative one, so the available/monthly math
+// just sums signed amounts.
+enum EntryKind {
+  SPEND
+  ADJUSTMENT
+}
+
+// Many rows per user. `createdAt` is set at submission time and never edited
+// (no backdating, so an entry never shuffles between cycles); `amountCents`
+// and `note`, however, are editable in place via `expense.update`, and
+// `updatedAt` records that edit. `amountCents` is positive for a spend and
+// signed for an adjustment (validated at the tRPC edge). Deletes are hard
+// deletes — the row is physically removed.
 model Expense {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind        EntryKind @default(SPEND)
   amountCents Int
   note        String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
 
   @@index([userId, createdAt])
   @@map("expense")

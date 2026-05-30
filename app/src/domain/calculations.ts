@@ -7,23 +7,26 @@
  */
 
 import { elapsedDaysInCycle, getCurrentCycle, totalDaysInCycle } from "./cycle";
-import { Money } from "./money";
+import { sumNet } from "./entry";
+import type { Money } from "./money";
 import type { Budget, Expense } from "./types";
 
-/** Sum of expense amounts whose `createdAt` falls inside the given cycle. */
+/**
+ * The total charged against the budget for the given cycle: the *net* signed
+ * sum of every in-cycle entry. Spends and set-aside adjustments add to it;
+ * top-up adjustments (stored negative) subtract from it. Routing this through
+ * `sumNet` keeps the adjustment sign convention in one place (`entry.ts`).
+ */
 function sumExpensesInCycle(
 	expenses: readonly Expense[],
 	cycleStart: Date,
 	cycleEnd: Date,
 ): Money {
-	let sum = Money.zero();
-	for (const e of expenses) {
+	const inCycle = expenses.filter((e) => {
 		const t = e.createdAt.getTime();
-		if (t >= cycleStart.getTime() && t < cycleEnd.getTime()) {
-			sum = sum.add(e.amount);
-		}
-	}
-	return sum;
+		return t >= cycleStart.getTime() && t < cycleEnd.getTime();
+	});
+	return sumNet(inCycle);
 }
 
 /**

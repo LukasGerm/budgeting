@@ -101,9 +101,11 @@ export type BudgetScalarFieldEnum = (typeof BudgetScalarFieldEnum)[keyof typeof 
 export const ExpenseScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  kind: 'kind',
   amountCents: 'amountCents',
   note: 'note',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type ExpenseScalarFieldEnum = (typeof ExpenseScalarFieldEnum)[keyof typeof ExpenseScalarFieldEnum]
