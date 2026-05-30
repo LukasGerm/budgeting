@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 import { prisma } from "#/db";
-import { getCurrentCycle, STREAK_WINDOW_DAYS } from "#/domain";
+import { getCurrentCycle, getRecentCycles, STREAK_WINDOW_DAYS } from "#/domain";
 import { EntryKind } from "#/generated/prisma/enums";
 import { createTRPCRouter, protectedProcedure } from "./init";
 
@@ -136,6 +136,45 @@ const expenseRouter = {
 				where: {
 					userId: ctx.userId,
 					createdAt: { gte: cycle.start, lt: cycle.end },
+				},
+				orderBy: { createdAt: "desc" },
+			});
+			return rows.map((row) => ({
+				id: row.id,
+				kind: toWireKind(row.kind),
+				amountCents: row.amountCents,
+				note: row.note,
+				createdAt: row.createdAt,
+			}));
+		}),
+
+	// Entries spanning the most recent `count` cycles, for the cross-cycle
+	// monthly-trend chart. Like `listForCurrentCycle`, the cycle span is a *local*
+	// notion: it takes the caller's local `now` and the user's anchor day, reuses
+	// the pure domain `getRecentCycles` to enumerate the window, then bounds one
+	// `findMany` to `[oldest cycle start, current cycle end)`. The client bins the
+	// rows back into cycles via `cycleTotals` (the server never computes "today").
+	// No budget → no cycles → an empty list.
+	listForCycles: protectedProcedure
+		.input(
+			z.object({ now: z.date(), count: z.number().int().min(1).default(6) }),
+		)
+		.query(async ({ ctx, input }) => {
+			const budget = await prisma.budget.findUnique({
+				where: { userId: ctx.userId },
+			});
+			if (!budget) return [];
+
+			// Newest → oldest. The span is the oldest cycle's start up to (but not
+			// including) the current cycle's end — half-open, matching the cycles.
+			const cycles = getRecentCycles(input.now, budget.anchorDay, input.count);
+			const oldestStart = cycles[cycles.length - 1].start;
+			const currentEnd = cycles[0].end;
+
+			const rows = await prisma.expense.findMany({
+				where: {
+					userId: ctx.userId,
+					createdAt: { gte: oldestStart, lt: currentEnd },
 				},
 				orderBy: { createdAt: "desc" },
 			});

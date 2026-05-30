@@ -2,9 +2,9 @@
  * BottomNav — the persistent tab bar for authenticated screens.
  *
  * Rendered once by the `_authed` layout so it appears on every authed page
- * (Home / History / Settings) without each route re-declaring it. It's a
- * `fixed bottom-0` bar; the layout pads its content with `pb-16` so nothing
- * hides behind it, and the FAB (in `SpendSheet`) sits above it.
+ * (Home / Dashboard / History / Settings) without each route re-declaring it.
+ * It's a `fixed bottom-0` bar; the layout pads its content with `pb-16` so
+ * nothing hides behind it, and the FAB (in `SpendSheet`) sits above it.
  *
  * Active state comes from TanStack Router's `Link` — we read `isActive` from
  * its render-prop and colour the active tab `text-foreground` against the
@@ -14,7 +14,7 @@
 
 import { Link } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
-import { Clock, Home, Settings } from "lucide-react";
+import { Clock, Home, LayoutDashboard, Settings } from "lucide-react";
 import { cn } from "#/lib/utils";
 
 interface NavTab {
@@ -26,6 +26,7 @@ interface NavTab {
 
 const TABS: readonly NavTab[] = [
 	{ to: "/", label: "Home", icon: Home, exact: true },
+	{ to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: false },
 	{ to: "/history", label: "History", icon: Clock, exact: false },
 	{ to: "/settings", label: "Settings", icon: Settings, exact: false },
 ];

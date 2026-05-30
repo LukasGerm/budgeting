@@ -1,28 +1,34 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { auth } from "#/lib/auth";
 
 /**
- * Per-request tRPC context.
+ * Per-request tRPC context shape: the authenticated caller's id (or null for
+ * anonymous calls). Procedures that need auth gate on it via
+ * `protectedProcedure` below.
  *
- * Reads the Better Auth session off the inbound `Request` headers and
- * exposes the user id (or null for anonymous calls). Procedures that need
- * auth gate on it via `protectedProcedure` below.
+ * The *production* context is built from the request in `context.ts`
+ * (`createTRPCContext`), which reads the Better Auth session. That lives in its
+ * own module so importing the procedure builders / router here does NOT pull in
+ * Better Auth — keeping the router import-safe for a direct server-side caller
+ * (e.g. integration tests via `createCallerFactory`).
  */
-export async function createTRPCContext({ req }: { req: Request }) {
-	const session = await auth.api.getSession({ headers: req.headers });
-	return {
-		userId: session?.user.id ?? null,
-	};
+export interface TRPCContext {
+	userId: string | null;
 }
-
-type TRPCContext = Awaited<ReturnType<typeof createTRPCContext>>;
 
 const t = initTRPC.context<TRPCContext>().create({
 	transformer: superjson,
 });
 
 export const createTRPCRouter = t.router;
+
+/**
+ * Build a server-side caller for the router with an injected context — the
+ * direct, in-process way to invoke procedures without the HTTP/auth layer.
+ * Production wires context from the request (`createTRPCContext`); tests use this
+ * to call procedures with a known `userId`.
+ */
+export const createCallerFactory = t.createCallerFactory;
 
 /**
  * Unauthenticated procedure builder. Part of the tRPC scaffold trio

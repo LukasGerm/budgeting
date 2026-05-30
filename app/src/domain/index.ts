@@ -7,11 +7,29 @@ export {
 	calculateAvailableToday,
 	calculateMonthlyRemaining,
 } from "./calculations";
+export type { Cycle } from "./cycle";
 export {
 	elapsedDaysInCycle,
 	getCurrentCycle,
 	totalDaysInCycle,
 } from "./cycle";
+export { getRecentCycles } from "./cycle-history";
+export {
+	biggestSpends,
+	type CycleComparison,
+	type CycleSpendSummary,
+	type CycleTotal,
+	compareToLastCycle,
+	cumulativePaceSeries,
+	cycleSpendSummary,
+	cycleTotals,
+	type DailyBucket,
+	type DailySpendBuckets,
+	dailySpendBuckets,
+	type EndOfCycleProjection,
+	type PacePoint,
+	projectEndOfCycle,
+} from "./dashboard";
 export type { AdjustmentDirection, EntryKind } from "./entry";
 export {
 	adjustmentAmountCents,

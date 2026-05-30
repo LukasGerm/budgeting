@@ -2,6 +2,30 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## How you must work: delegate to subagents (mandatory)
+
+This repo ships three purpose-built subagents in `app/.claude/agents/`. For any real implementation work you are an **orchestrator, not the author** — you plan with the user, then drive these agents through the loop below. Do **not** write feature code, review it, or browser-verify it yourself in the main session; spawn the matching agent via the Agent tool. This is the default way of working here, not an optional optimization.
+
+The agents:
+- **`react-tanstack-implementer`** — writes and refactors all feature code (routes, components, hooks, tRPC, Query). The only thing that touches feature code.
+- **`react-code-reviewer`** — reviews recently-changed React/TanStack code against project conventions; reports findings, never edits.
+- **`browser-change-verifier`** — runs the app in a real Chrome browser and reports PASS/FAIL with evidence; read-only, never edits.
+
+### The loop
+
+1. **Plan — main session, not delegated.** Plan the feature with the user and capture it as a PRD/plan under `plans/`, sliced into vertical slices where possible. This is the one phase you do directly.
+2. **Implement a slice → `react-tanstack-implementer`.** When the user tells you to implement, spawn the implementer for **one slice at a time**, handing it that slice of the PRD plus the conventions it must follow. Don't hand-write the slice yourself.
+3. **Review the slice → `react-code-reviewer`.** As soon as a slice's implementation comes back, spawn the reviewer on the just-changed code.
+4. **Apply requested changes → `react-tanstack-implementer`.** Turn the reviewer's findings into a concrete change prompt and spawn the implementer again to apply them. Then re-review (step 3) and repeat until the reviewer has no blocking findings. Only then move on to the next slice.
+5. **Verify the whole plan → `browser-change-verifier`.** Once every slice in the plan is implemented and reviewed clean, spawn the browser verifier to smoke-test the end-to-end outcome in Chrome. If it reports bugs, loop back to step 2/4 with the implementer, then re-verify — repeat until it reports PASS.
+
+### Rules
+
+- **Default to delegation.** Anything that creates or changes feature code goes through `react-tanstack-implementer`. The only things you do directly are planning/PRD authoring, orchestration, and trivial non-feature edits (a typo, a doc line, a config flag the user explicitly asks you to flip).
+- **One slice at a time.** Implement → review → fix → re-review for a slice before starting the next; don't batch a whole plan through the implementer in a single shot.
+- **Never skip the reviewer or the verifier.** A slice isn't done until the reviewer is clean; a plan isn't done until `browser-change-verifier` reports PASS.
+- **You stay the orchestrator.** A subagent's output is returned only to you, not to the user — relay what matters, summarize findings, and decide the next step.
+
 ## Repository layout
 
 This is a monorepo with a single application at `app/`. All commands below assume `cd app/` first; the repo root only holds `README.md` and `PRODUCT.md` (one-line stub: the product is a budgeting PWA for monthly budgets).
@@ -51,7 +75,7 @@ Run a single Vitest file/test: `pnpm exec vitest run path/to/file.test.ts -t "te
 
 ## Working on this app
 
-- **Always run the app yourself** to verify a change actually works — `pnpm dev` from `app/` and exercise the affected flow in the browser. Type checks and unit tests don't count as verification for UI or end-to-end behaviour. If you genuinely can't run it (no browser available, env not set up), say so explicitly rather than claiming the change works.
+- **Always run the app to verify a change actually works** — type checks and unit tests don't count as verification for UI or end-to-end behaviour. This is the `browser-change-verifier` agent's job (see the mandatory workflow above): it runs `pnpm dev` and exercises the affected flow in a real browser. If it genuinely can't run (no browser available, env not set up), it must say so explicitly rather than claim the change works.
 - **Create your own test accounts when you need them.** Sign up via the running app, log in, and seed any needed state through the UI or `pnpm db:seed`. Don't ask the user for credentials.
 - **UI components must come from shadcn/ui.** Add new ones with `pnpm dlx shadcn@latest add <component>` (registered in `components.json`, aliased to `#/components/ui`). Don't hand-roll buttons, inputs, dialogs, etc., and don't pull in another component library. Compose shadcn primitives; only write custom components when no shadcn equivalent exists.
 

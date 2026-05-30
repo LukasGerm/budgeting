@@ -1,0 +1,37 @@
+---
+name: dashboard-route-ssr
+description: /dashboard is an SSR-data-loaded _authed route; how to verify SSR first paint and what a regression looks like
+metadata:
+  type: project
+---
+
+`/dashboard` (`src/routes/_authed/dashboard.tsx`) is **SSR-data-loaded**, not client-only. Its loader prefetches the SAME queries Home warms (`budget.get` + `expense.listForCurrentCycle`) into the TanStack Query cache and returns a loader-computed `now`. The component reads `now` from `Route.useLoaderData()` and passes it verbatim to `useExpenses` (the #418 hydration discipline).
+
+**Re-verified 2026-05-30 (Slice 1) — dashtest@example.com, budget 900 €, anchor 1.** Account data DRIFTED from the original 51,55 € seed: current cycle holds 4 SPENDs = 207,00 € (cents 4400/14200/700/1400; raw kind is lowercase `"spend"`, NOT "SPEND" — filter by lowercase!). No adjustment present at start of this run. So compute spend-only from the actual ledger every run; never assume the figures. Headline this run: SPENT 207,00 € / AVG 6,90 € / DAYS LEFT 1 day (avg = 20700/30 floored = 690c). Matches spend-only sum exactly. SSR fetch has207:true, has227:false, hasLoading/Unauth/NotFound false. Console clean (no #418).
+- Headline card: SPENT THIS CYCLE / AVERAGE / DAY / DAYS LEFT. Money de-DE/EUR, days-left singular "1 day". 2-col grid (spent+avg top row, days-left below). Desktop (1232) + 390px mobile both clean, dark theme. (Prior empty-cycle run read 0,00 € / 0,00 € / 1 day — also valid.)
+- Hard reload `/dashboard` (real navigate AND `fetch('/dashboard',{credentials:'include'})`): SSR HTML has header + "SPENT THIS CYCLE" + "0,00 €" + "1 day"; `hasLoading:false, hasNotFound:false, hasUnauth:false`. True SSR first paint, no flash.
+- Hard reload: **zero client `/api/trpc` requests** (hydrated SSR cache hit) and **zero console errors** (onlyErrors → none; no #418).
+- Auth guard: `curl` no-cookie AND garbage-cookie → 307 redirect to `/login`; `/api/trpc` unauthenticated = 401.
+- Bottom nav at 390px: navOverflow:false, all 4 tabs icon+label, clipped:false all. Active-state isolation correct (only Dashboard active on /dashboard; only Home on /).
+- DAYS LEFT = 1 confirms anchor-1 cycle math: May (31d), today the 30th → elapsed 30, total 31, left 1.
+
+SPEND-ONLY EXCLUSION: confirmed at the "no over-count" level only — headline 207,00 € equals the spend-only ledger sum AND the cycle has no adjustment (ledger `adjustments:[]`), so nothing extra is being summed. The STRONGER top-up-exclusion demo (add a top-up, confirm headline stays 207 while Home net rises) was NOT completed — repeated FAB-click attempts MISSED and the dialog never opened, so no top-up was ever written (ledger stayed 4 spends). Rule is correct at code level (`cycleSpendSummary`→`sumSpends`; `sumSpends` filters kind==='spend') and the 4 dashboard unit tests pass. 
+**COORDINATE PITFALL that burned this run:** at window 1232 wide the screenshot returned by `computer screenshot` is ALSO 1232px (devicePixelRatio=2 but image is downscaled to CSS px), so screenshot px ≈ CSS px — BUT the FAB real center from getBoundingClientRect was (1176,511), not where I clicked. ALWAYS click the getBoundingClientRect center, never a guessed/remembered coordinate, and after each click re-check `document.querySelector('[role="dialog"]')` before proceeding; if NO DIALOG, do NOT continue blindly (subsequent clicks hit the page underneath). Authoritative ledger check: `fetch('/api/trpc/expense.listForCurrentCycle?batch=1&input='+encodeURIComponent(JSON.stringify({0:{json:{now:<startOfDay ISO>},meta:{values:{now:['Date']}}}})))` then read `[0].result.data.json` (each has lowercase `kind` spend/topup/setaside + `amountCents`).
+
+**SEEDING GOTCHA — entry UI is a NUMERIC KEYPAD SHEET, not text inputs (cost MANY retries):**
+- Home FAB icon-only: open via `[...document.querySelectorAll('button')].find(b=>b.getAttribute('aria-label')==='Log a spend').click()` (empty textContent).
+- Sheet (`[role=dialog]`) has NO `<input>`s. Keypad buttons: digits match by `textContent` '0'..'9'; **decimal separator** = button with `aria-label="Decimal separator"` (its textContent is ',' but match by aria-label to be safe); backspace = `aria-label="Backspace"`. Display node shows e.g. "12,50 €".
+- Top toggle: **Spend / Adjust** (textContent). Under Adjust a sub-toggle **"+ Top-up" / "– Set aside"** appears (textContent; note the en-dash/figure, match by startsWith). Top-up display shows "+5,75 €".
+- SUBMIT button: it is NOT `aria-label="Add spend"`. In the button list it's the last button with textContent starting "Log a spend" (truncates to "Log"). RE-INSPECT each session: dump `[...d.querySelectorAll('button')].map(b=>({txt:b.textContent.trim(),aria:b.getAttribute('aria-label'),disabled:b.disabled}))` and pick the submit by its real label; it may be DISABLED until a non-zero amount is entered.
+- Order matters: toggle FIRST, then digits in a separate call (mode switch re-renders, discards keypad input). Verify live amount text before submit, and verify History/Home updated AFTER submit (don't assume).
+
+**TRANSIENT — dashboard tRPC batch 503 on client tab-nav (NOT deterministic, NOT a Slice 1 blocker):** A prior run saw the Dashboard-tab client nav fire `GET /api/trpc/budget.get,expense.listForCurrentCycle?batch=1...` returning **503**. The 2026-05-30 re-run was MIXED: one Home-nav reload of `/` returned 503 on the same batch, but the Dashboard-tab client nav itself returned **200** and rendered correctly. So it's flaky dev-server/HMR state, not a code defect. The 503s also appeared on `expense.add` POSTs from an earlier seeding run (timestamps matched the spends' createdAt) yet those entries STILL persisted — i.e. a 503 here doesn't always mean the write failed; verify via the ledger fetch, not the HTTP status. Never affects the visible UI (SSR-first; first paint always correct from hydrated cache). On a true hard navigate/reload to /dashboard there are ZERO client trpc requests (SSR cache hit).
+
+**Regression tells to watch on this route:**
+- "Loading…" flash on first paint, or "Not Found" / blank (the SSR suspense-query notFound fallthrough — every useSuspenseQuery must be in the loader's Promise.all).
+- A client tRPC refetch of `listForCurrentCycle` appearing on hard load = `now` query-key mismatch (server vs client TZ) → also throws React #418.
+- "UNAUTHORIZED" anywhere = SSR cookie-forwarding regressed in root-provider's tRPC link.
+
+**Headline rule:** "Spent this cycle" is SPEND-only (`sumSpends`, excludes top-up/set-aside adjustments). With 4 spends = 51,55 € and a 20 € top-up, headline correctly showed 51,55 € (NOT 71,55 €). Avg/day = totalSpent ÷ elapsed days (floored); days left = totalDaysInCycle − elapsed, clamped ≥0. For anchor day 1, May (31d), today the 30th: avg = 51,55/30 = 1,71 €, days left = 1.
+
+**Bottom nav:** order Home · Dashboard · History · Settings; Home is exact-match active, others prefix. NOTE: during a route transition (and for ~1s right after a `navigate`) a read can briefly show TWO tabs `data-status=active` (old + new) — this is a TanStack Router transition artifact, cosmetic, not a Slice 1 defect. Wait ~2s and re-read; the resolved steady state is correct (single active tab).
