@@ -1,7 +1,14 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
+import { HABIT_ICON_NAMES } from "#/components/habits/habit-icons";
 import { prisma } from "#/db";
-import { getCurrentCycle, getRecentCycles, STREAK_WINDOW_DAYS } from "#/domain";
+import {
+	getCurrentCycle,
+	getRecentCycles,
+	HABIT_COLOR_PALETTE,
+	pickHabitColor,
+	STREAK_WINDOW_DAYS,
+} from "#/domain";
 import { EntryKind } from "#/generated/prisma/enums";
 import { createTRPCRouter, protectedProcedure } from "./init";
 
@@ -259,8 +266,200 @@ const expenseRouter = {
 		}),
 } satisfies TRPCRouterRecord;
 
+/**
+ * Habit procedures — scoped to the authenticated caller.
+ *
+ * Wire contract for completion days:
+ *   `HabitCompletion.day` is a `@db.Date` column; Prisma returns it as a
+ *   UTC-midnight `Date`. We map it to an ISO calendar date string
+ *   `"YYYY-MM-DD"` using UTC parts (toISOString().slice(0,10)) so the result
+ *   is timezone-agnostic. Never apply local-parts `dayKey()` to a value from
+ *   this column — in timezones west of UTC it would shift the day back by one.
+ *
+ *   The `use-habits` hook converts between this ISO wire format and the
+ *   local-parts `dayKey` strings that the domain functions consume. Slices 4+
+ *   do that conversion; in this slice completionDays flows through as-is.
+ *
+ * `list` takes no `now` input — it returns the full completion set so the
+ * client can compute accurate streaks beyond any visible window, and because
+ * "today" is a client concern (the server never computes it).
+ */
+const habitRouter = {
+	/**
+	 * Return all habits for the caller, ordered by createdAt ascending (stable
+	 * creation order), each with its full completion day set as ISO strings.
+	 *
+	 * Completion days: `row.day.toISOString().slice(0, 10)` → `"YYYY-MM-DD"`.
+	 * The client converts ISO → dayKey at the hook boundary (slice 4).
+	 */
+	list: protectedProcedure.query(async ({ ctx }) => {
+		const rows = await prisma.habit.findMany({
+			where: { userId: ctx.userId },
+			orderBy: { createdAt: "asc" },
+			include: { completions: true },
+		});
+		return rows.map((row) => ({
+			id: row.id,
+			name: row.name,
+			icon: row.icon,
+			color: row.color,
+			createdAt: row.createdAt,
+			completionDays: row.completions.map((c) =>
+				c.day.toISOString().slice(0, 10),
+			),
+		}));
+	}),
+
+	/**
+	 * Create a new habit for the caller. Color is auto-assigned server-side via
+	 * `pickHabitColor` over the caller's existing habit colors, so the client
+	 * never needs to supply or know about colors.
+	 *
+	 * Returns the created habit in the same wire shape as a `list` row (with an
+	 * empty `completionDays`).
+	 */
+	create: protectedProcedure
+		.input(
+			z.object({
+				name: z.string().trim().min(1).max(60),
+				icon: z.enum(HABIT_ICON_NAMES),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			// Fetch the caller's existing colors to pick a distinct one.
+			const existing = await prisma.habit.findMany({
+				where: { userId: ctx.userId },
+				select: { color: true },
+			});
+			const usedColors = existing.map((h) => h.color);
+			const color = pickHabitColor(HABIT_COLOR_PALETTE, usedColors);
+
+			const row = await prisma.habit.create({
+				data: {
+					userId: ctx.userId,
+					name: input.name,
+					icon: input.icon,
+					color,
+				},
+			});
+			return {
+				id: row.id,
+				name: row.name,
+				icon: row.icon,
+				color: row.color,
+				createdAt: row.createdAt,
+				completionDays: [] as string[],
+			};
+		}),
+
+	/**
+	 * Rename / re-icon a caller-owned habit in place. Ownership is pinned in
+	 * `where` (`id` + `userId`), so a request for another user's habit matches
+	 * zero rows and is a no-op (no throw). `color` is deliberately absent from
+	 * `data` — color is immutable post-create (mirrors the deliberate absence of
+	 * `createdAt` in `expense.update`).
+	 */
+	update: protectedProcedure
+		.input(
+			z.object({
+				id: z.string(),
+				name: z.string().trim().min(1).max(60),
+				icon: z.enum(HABIT_ICON_NAMES),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			// Edit name + icon in place, scoped to the caller via `id` + `userId`
+			// (another user's habit matches nothing, so it's a no-op). `color` is
+			// deliberately absent — a habit's color is immutable post-create.
+			await prisma.habit.updateMany({
+				where: { id: input.id, userId: ctx.userId },
+				data: { name: input.name, icon: input.icon },
+			});
+		}),
+
+	/**
+	 * Hard-delete a caller-owned habit. Ownership is pinned in `where` (`id` +
+	 * `userId`), so a request for another user's habit is a no-op (no throw).
+	 * `HabitCompletion` rows cascade-delete via the `onDelete: Cascade` FK, so
+	 * no manual completion cleanup is needed.
+	 */
+	delete: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			// Hard delete, scoped to the caller via `id` + `userId` (another
+			// user's habit matches nothing, so it's a no-op rather than an error).
+			// Completion rows cascade-delete automatically via the FK constraint.
+			await prisma.habit.deleteMany({
+				where: { id: input.id, userId: ctx.userId },
+			});
+		}),
+
+	/**
+	 * Toggle a completion for a given habit + local calendar day.
+	 *
+	 * Ownership gate (security boundary): the caller must own the habit. Because
+	 * `HabitCompletion` has no `userId` column of its own, ownership is verified
+	 * by looking up the parent habit row. A request for another user's `habitId`
+	 * resolves `owned = null` and returns early — no write happens. This mirrors
+	 * the expense `updateMany`/`deleteMany` ownership pattern, adapted for the
+	 * case where the owned-id lives on the parent model.
+	 *
+	 * Idempotency:
+	 *   - `done: true`  → upsert on the `@@unique([habitId, day])` constraint;
+	 *     `update: {}` means a second tap is a no-op, not an error.
+	 *   - `done: false` → `deleteMany` so a missing row is a no-op (not an error).
+	 *
+	 * Day handling: `day` arrives as an ISO calendar date `"YYYY-MM-DD"` (the
+	 * client's local day). We parse it as UTC midnight (`T00:00:00.000Z`) so the
+	 * stored `@db.Date` value round-trips byte-for-byte with the UTC-parts
+	 * mapping in `list` (`c.day.toISOString().slice(0, 10)`). No local timezone
+	 * math is applied on the server — the day is an opaque label the client owns.
+	 */
+	toggleCompletion: protectedProcedure
+		.input(
+			z.object({
+				habitId: z.string(),
+				/** ISO calendar date "YYYY-MM-DD" — the client's local day. */
+				day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+				done: z.boolean(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			// Ownership gate: verify the habit belongs to the caller before writing.
+			const owned = await prisma.habit.findFirst({
+				where: { id: input.habitId, userId: ctx.userId },
+				select: { id: true },
+			});
+			if (!owned) {
+				// Another user's habit (or non-existent) — return without writing.
+				return;
+			}
+
+			// Parse the ISO day string as a UTC-midnight Date. Storing at UTC midnight
+			// ensures `toISOString().slice(0, 10)` in `list` round-trips to the same
+			// "YYYY-MM-DD" string the client supplied.
+			const day = new Date(`${input.day}T00:00:00.000Z`);
+
+			if (input.done) {
+				// Upsert: idempotent against the @@unique([habitId, day]) constraint.
+				// `update: {}` means a second tap on an already-done day is a no-op.
+				await prisma.habitCompletion.upsert({
+					where: { habitId_day: { habitId: input.habitId, day } },
+					create: { habitId: input.habitId, day },
+					update: {},
+				});
+			} else {
+				// Delete: deleteMany so a missing row is a no-op, not a throw.
+				await prisma.habitCompletion.deleteMany({
+					where: { habitId: input.habitId, day },
+				});
+			}
+		}),
+} satisfies TRPCRouterRecord;
+
 export const trpcRouter = createTRPCRouter({
 	budget: budgetRouter,
 	expense: expenseRouter,
+	habit: habitRouter,
 });
 export type TRPCRouter = typeof trpcRouter;

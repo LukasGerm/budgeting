@@ -2,19 +2,22 @@
  * BottomNav — the persistent tab bar for authenticated screens.
  *
  * Rendered once by the `_authed` layout so it appears on every authed page
- * (Home / Dashboard / History / Settings) without each route re-declaring it.
+ * (Home / Dashboard / History / Habits) without each route re-declaring it.
  * It's a `fixed bottom-0` bar; the layout pads its content with `pb-16` so
  * nothing hides behind it, and the FAB (in `SpendSheet`) sits above it.
  *
  * Active state comes from TanStack Router's `Link` — we read `isActive` from
  * its render-prop and colour the active tab `text-foreground` against the
  * muted rest. `activeOptions={{ exact: true }}` on Home keeps it from staying
- * lit on `/history` and `/settings` (every path is a prefix of `/`).
+ * lit on `/history` and `/habits` (every path is a prefix of `/`).
+ *
+ * Settings is no longer a bottom tab — it's reachable via the gear in the
+ * top app-bar rendered by the `_authed` layout.
  */
 
 import { Link } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
-import { Clock, Home, LayoutDashboard, Settings } from "lucide-react";
+import { CalendarCheck, Clock, Home, LayoutDashboard } from "lucide-react";
 import { cn } from "#/lib/utils";
 
 interface NavTab {
@@ -28,7 +31,7 @@ const TABS: readonly NavTab[] = [
 	{ to: "/", label: "Home", icon: Home, exact: true },
 	{ to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: false },
 	{ to: "/history", label: "History", icon: Clock, exact: false },
-	{ to: "/settings", label: "Settings", icon: Settings, exact: false },
+	{ to: "/habits", label: "Habits", icon: CalendarCheck, exact: false },
 ];
 
 export function BottomNav() {

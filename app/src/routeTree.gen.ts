@@ -16,6 +16,7 @@ import { Route as AuthedIndexRouteImport } from './routes/_authed/index'
 import { Route as AuthedSettingsRouteImport } from './routes/_authed/settings'
 import { Route as AuthedOnboardingRouteImport } from './routes/_authed/onboarding'
 import { Route as AuthedHistoryRouteImport } from './routes/_authed/history'
+import { Route as AuthedHabitsRouteImport } from './routes/_authed/habits'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -54,6 +55,11 @@ const AuthedHistoryRoute = AuthedHistoryRouteImport.update({
   path: '/history',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedHabitsRoute = AuthedHabitsRouteImport.update({
+  id: '/habits',
+  path: '/habits',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthedDashboardRoute
+  '/habits': typeof AuthedHabitsRoute
   '/history': typeof AuthedHistoryRoute
   '/onboarding': typeof AuthedOnboardingRoute
   '/settings': typeof AuthedSettingsRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthedDashboardRoute
+  '/habits': typeof AuthedHabitsRoute
   '/history': typeof AuthedHistoryRoute
   '/onboarding': typeof AuthedOnboardingRoute
   '/settings': typeof AuthedSettingsRoute
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/_authed/dashboard': typeof AuthedDashboardRoute
+  '/_authed/habits': typeof AuthedHabitsRoute
   '/_authed/history': typeof AuthedHistoryRoute
   '/_authed/onboarding': typeof AuthedOnboardingRoute
   '/_authed/settings': typeof AuthedSettingsRoute
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/dashboard'
+    | '/habits'
     | '/history'
     | '/onboarding'
     | '/settings'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/dashboard'
+    | '/habits'
     | '/history'
     | '/onboarding'
     | '/settings'
@@ -134,6 +145,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/_authed/dashboard'
+    | '/_authed/habits'
     | '/_authed/history'
     | '/_authed/onboarding'
     | '/_authed/settings'
@@ -201,6 +213,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedHistoryRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/habits': {
+      id: '/_authed/habits'
+      path: '/habits'
+      fullPath: '/habits'
+      preLoaderRoute: typeof AuthedHabitsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/dashboard': {
       id: '/_authed/dashboard'
       path: '/dashboard'
@@ -227,6 +246,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthedRouteChildren {
   AuthedDashboardRoute: typeof AuthedDashboardRoute
+  AuthedHabitsRoute: typeof AuthedHabitsRoute
   AuthedHistoryRoute: typeof AuthedHistoryRoute
   AuthedOnboardingRoute: typeof AuthedOnboardingRoute
   AuthedSettingsRoute: typeof AuthedSettingsRoute
@@ -235,6 +255,7 @@ interface AuthedRouteChildren {
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedDashboardRoute: AuthedDashboardRoute,
+  AuthedHabitsRoute: AuthedHabitsRoute,
   AuthedHistoryRoute: AuthedHistoryRoute,
   AuthedOnboardingRoute: AuthedOnboardingRoute,
   AuthedSettingsRoute: AuthedSettingsRoute,

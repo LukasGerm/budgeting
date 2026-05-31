@@ -37,6 +37,15 @@ export {
 	sumNet,
 	sumSpends,
 } from "./entry";
+export {
+	buildHeatmap,
+	currentStreak,
+	dayKey,
+	HABIT_COLOR_PALETTE,
+	type HeatmapCell,
+	type HeatmapCellState,
+	pickHabitColor,
+} from "./habit";
 export { Money } from "./money";
 export { formatMonthlyStatus } from "./monthly-status";
 export { formatRelativeDate } from "./relative-date";

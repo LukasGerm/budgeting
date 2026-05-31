@@ -11,9 +11,9 @@ datasource db {
 // Field names match the Better Auth defaults; do not rename without also configuring
 // the adapter's `fields` mapping.
 model User {
-  id            String    @id
+  id            String           @id
   name          String
-  email         String    @unique
+  email         String           @unique
   emailVerified Boolean
   image         String?
   createdAt     DateTime
@@ -22,6 +22,7 @@ model User {
   accounts      Account[]
   budget        Budget?
   expenses      Expense[]
+  habits        Habit[]
 
   @@map("user")
 }
@@ -66,6 +67,43 @@ model Expense {
 
   @@index([userId, createdAt])
   @@map("expense")
+}
+
+// A named daily habit, scoped to a user. `color` is auto-assigned at creation
+// from a curated dark-theme palette and stored immutably so the card color never
+// flickers between loads. `schedule` is reserved for future per-weekday
+// scheduling and is unused in MVP — every day is a target.
+model Habit {
+  id          String            @id @default(cuid())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  icon        String
+  color       String
+  schedule    String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  completions HabitCompletion[]
+
+  @@index([userId, createdAt])
+  @@map("habit")
+}
+
+// Records that a habit was done on a given local calendar day. `day` is stored
+// as a plain date (`@db.Date`) rather than a timestamp so there is no timezone
+// math on the server — the day is a label the client supplies and the server
+// persists verbatim. The `@@unique([habitId, day])` constraint ensures at most
+// one completion per habit per day, making toggling idempotent (upsert + delete
+// are both safe regardless of how many times the user taps).
+model HabitCompletion {
+  id        String   @id @default(cuid())
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  day       DateTime @db.Date
+  createdAt DateTime @default(now())
+
+  @@unique([habitId, day])
+  @@map("habit_completion")
 }
 
 model Session {

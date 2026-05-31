@@ -54,6 +54,8 @@ export const ModelName = {
   User: 'User',
   Budget: 'Budget',
   Expense: 'Expense',
+  Habit: 'Habit',
+  HabitCompletion: 'HabitCompletion',
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification'
@@ -109,6 +111,30 @@ export const ExpenseScalarFieldEnum = {
 } as const
 
 export type ExpenseScalarFieldEnum = (typeof ExpenseScalarFieldEnum)[keyof typeof ExpenseScalarFieldEnum]
+
+
+export const HabitScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  icon: 'icon',
+  color: 'color',
+  schedule: 'schedule',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HabitScalarFieldEnum = (typeof HabitScalarFieldEnum)[keyof typeof HabitScalarFieldEnum]
+
+
+export const HabitCompletionScalarFieldEnum = {
+  id: 'id',
+  habitId: 'habitId',
+  day: 'day',
+  createdAt: 'createdAt'
+} as const
+
+export type HabitCompletionScalarFieldEnum = (typeof HabitCompletionScalarFieldEnum)[keyof typeof HabitCompletionScalarFieldEnum]
 
 
 export const SessionScalarFieldEnum = {

@@ -57,6 +57,16 @@ export type Budget = Prisma.BudgetModel
  */
 export type Expense = Prisma.ExpenseModel
 /**
+ * Model Habit
+ * 
+ */
+export type Habit = Prisma.HabitModel
+/**
+ * Model HabitCompletion
+ * 
+ */
+export type HabitCompletion = Prisma.HabitCompletionModel
+/**
  * Model Session
  * 
  */

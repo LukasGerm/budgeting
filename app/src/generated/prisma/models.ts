@@ -11,6 +11,8 @@
 export type * from './models/User.ts'
 export type * from './models/Budget.ts'
 export type * from './models/Expense.ts'
+export type * from './models/Habit.ts'
+export type * from './models/HabitCompletion.ts'
 export type * from './models/Session.ts'
 export type * from './models/Account.ts'
 export type * from './models/Verification.ts'
