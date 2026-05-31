@@ -8,7 +8,7 @@
  *
  * Reads a `DailyBucket[]` (see `domain/dashboard.ts`) whose `spentCents` is
  * integer **cents** — the tooltip converts each back to a euro string via
- * `Money.fromCents(v).format()`.
+ * `useFormat().formatMoney(...)`.
  *
  * This is a SPEND chart, while the pace line (PaceLineChart) is NET. The card's
  * description spells that out so a day with an adjustment — where the two won't
@@ -21,6 +21,7 @@
  * only after the client effect runs — no layout shift, no hydration error.
  */
 
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, XAxis } from "recharts";
 import {
@@ -36,20 +37,15 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from "#/components/ui/chart";
-import { type DailyBucket, Money } from "#/domain";
+import type { DailyBucket } from "#/domain";
+import { useFormat } from "#/i18n/use-format";
 
 const CHART_HEIGHT = "h-[200px]";
 
-const chartConfig = {
-	spentCents: {
-		label: "Spent",
-		color: "var(--chart-1)",
-	},
-	// Drives the over-allowance bar colour (theme-aware red).
-	over: {
-		label: "Over allowance",
-		color: "var(--destructive)",
-	},
+// Labels are translated at render time in the component body.
+const chartConfigBase = {
+	spentCents: { color: "var(--chart-1)" },
+	over: { color: "var(--destructive)" },
 } satisfies ChartConfig;
 
 interface DailySpendChartProps {
@@ -63,16 +59,27 @@ export function DailySpendChart({ buckets }: DailySpendChartProps) {
 		setMounted(true);
 	}, []);
 
+	const { formatMoney } = useFormat();
+	const { t } = useLingui();
 	const hasData = buckets.length > 0;
+
+	const chartConfig = {
+		spentCents: { ...chartConfigBase.spentCents, label: t`Spent` },
+		over: { ...chartConfigBase.over, label: t`Over allowance` },
+	} satisfies ChartConfig;
 
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Daily spend</CardTitle>
+				<CardTitle>
+					<Trans>Daily spend</Trans>
+				</CardTitle>
 				<CardDescription>
-					Spends only — adjustments aren't shown here, so this won't match the
-					net pace line on adjustment days. Bars over the daily allowance are
-					highlighted.
+					<Trans>
+						Spends only — adjustments aren't shown here, so this won't match the
+						net pace line on adjustment days. Bars over the daily allowance are
+						highlighted.
+					</Trans>
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -81,7 +88,7 @@ export function DailySpendChart({ buckets }: DailySpendChartProps) {
 					<div
 						className={`${CHART_HEIGHT} flex w-full items-center justify-center text-center text-muted-foreground text-sm`}
 					>
-						No spending yet this cycle.
+						<Trans>No spending yet this cycle.</Trans>
 					</div>
 				) : !mounted ? (
 					// SSR / pre-mount placeholder: same height, no chart, no flash.
@@ -101,19 +108,21 @@ export function DailySpendChart({ buckets }: DailySpendChartProps) {
 								tickLine={false}
 								axisLine={false}
 								tickMargin={8}
-								tickFormatter={(v) => `Day ${v}`}
+								tickFormatter={(v) => t`Day ${v}`}
 								minTickGap={24}
 							/>
 							<ChartTooltip
 								cursor={false}
 								content={
 									<ChartTooltipContent
-										labelFormatter={(label) => `Day ${label}`}
+										labelFormatter={(label) => t`Day ${label}`}
 										formatter={(value) => (
 											<div className="flex w-full items-center justify-between gap-3">
-												<span className="text-muted-foreground">Spent</span>
+												<span className="text-muted-foreground">
+													<Trans>Spent</Trans>
+												</span>
 												<span className="font-medium font-mono tabular-nums">
-													{Money.fromCents(Number(value)).format()}
+													{formatMoney(Number(value))}
 												</span>
 											</div>
 										)}

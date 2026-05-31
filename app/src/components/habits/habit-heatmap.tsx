@@ -23,9 +23,11 @@
  *   - Future cells remain plain `<div>`s — no handler, no keyboard focus.
  */
 
+import { useLingui } from "@lingui/react/macro";
 import type { CSSProperties } from "react";
 import { type HeatmapCell as DomainHeatmapCell, dayKey } from "#/domain";
 import { localDateToIsoDay } from "#/hooks/use-habits";
+import { useFormat } from "#/i18n/use-format";
 
 interface HabitHeatmapProps {
 	/** Pre-built grid from `buildHeatmap` — pass the habit's `heatmap.weeks`. */
@@ -44,26 +46,30 @@ interface HabitHeatmapProps {
 	onToggleDay?: (isoDay: string, currentlyDone: boolean) => void;
 }
 
-function formatCellDate(date: Date): string {
-	return date.toLocaleDateString("en-US", {
-		weekday: "short",
-		year: "numeric",
-		month: "short",
-		day: "numeric",
-	});
-}
-
 interface CellProps {
 	cell: DomainHeatmapCell;
 	color: string;
 	isToday: boolean;
+	/** Locale-aware formatted date string (from useFormat().formatDate). */
+	formattedDate: string;
+	/** Translated "done" state label. */
+	stateLabel: string;
+	/** Translated action label ("tap to mark done" or "tap to unmark"). */
+	actionLabel: string;
 	onToggleDay?: (isoDay: string, currentlyDone: boolean) => void;
 }
 
-function Cell({ cell, color, isToday, onToggleDay }: CellProps) {
+function Cell({
+	cell,
+	color,
+	isToday,
+	formattedDate,
+	stateLabel,
+	actionLabel,
+	onToggleDay,
+}: CellProps) {
 	const isDone = cell.state === "done";
 	const isFuture = cell.state === "future";
-	const formattedDate = formatCellDate(cell.date);
 
 	const className = [
 		"aspect-square rounded-[2px]",
@@ -99,8 +105,6 @@ function Cell({ cell, color, isToday, onToggleDay }: CellProps) {
 	// the date and the current state so screen-reader users know what tapping
 	// will do. The tiny size is intentional (fit-to-width design constraint) —
 	// we don't add min-w/min-h that would break the grid layout.
-	const actionLabel = isDone ? "tap to unmark" : "tap to mark done";
-	const stateLabel = isDone ? "done" : "not done";
 	const ariaLabel = `${formattedDate}: ${stateLabel} — ${actionLabel}`;
 
 	return (
@@ -128,12 +132,22 @@ export function HabitHeatmap({
 	onToggleDay,
 }: HabitHeatmapProps) {
 	const todayKey = dayKey(now);
+	const { formatDate } = useFormat();
+	const { t } = useLingui();
+
+	// Pre-translate labels once per render to avoid repeated string creation in
+	// the cell render loop.
+	const doneLabelText = t`done`;
+	const notDoneLabelText = t`not done`;
+	const tapToUnmarkText = t`tap to unmark`;
+	const tapToMarkDoneText = t`tap to mark done`;
+	const completionHistoryLabel = t`Completion history`;
 
 	return (
 		<div
 			className="flex w-full gap-[2px]"
 			role="img"
-			aria-label="Completion history"
+			aria-label={completionHistoryLabel}
 		>
 			{weeks.map((column, wi) => (
 				// flex-1 min-w-0: each column shares available width equally and
@@ -143,15 +157,23 @@ export function HabitHeatmap({
 					key={wi}
 					className="flex min-w-0 flex-1 flex-col gap-[2px]"
 				>
-					{column.map((cell) => (
-						<Cell
-							key={cell.key}
-							cell={cell}
-							color={color}
-							isToday={cell.key === todayKey}
-							onToggleDay={onToggleDay}
-						/>
-					))}
+					{column.map((cell) => {
+						const isDone = cell.state === "done";
+						const stateLabel = isDone ? doneLabelText : notDoneLabelText;
+						const actionLabel = isDone ? tapToUnmarkText : tapToMarkDoneText;
+						return (
+							<Cell
+								key={cell.key}
+								cell={cell}
+								color={color}
+								isToday={cell.key === todayKey}
+								formattedDate={formatDate(cell.date, "long")}
+								stateLabel={stateLabel}
+								actionLabel={actionLabel}
+								onToggleDay={onToggleDay}
+							/>
+						);
+					})}
 				</div>
 			))}
 		</div>

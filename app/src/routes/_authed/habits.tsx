@@ -14,6 +14,7 @@
  * `withLoginRedirect` so first paint is server-rendered with no loading flash.
  */
 
+import { Trans } from "@lingui/react/macro";
 import { createFileRoute } from "@tanstack/react-router";
 import { CalendarCheck } from "lucide-react";
 import { HabitCard } from "#/components/habits/habit-card";
@@ -51,9 +52,11 @@ function HabitsPage() {
 		return (
 			<div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-8">
 				<header>
-					<h1 className="font-medium text-lg">Habits</h1>
+					<h1 className="font-medium text-lg">
+						<Trans>Habits</Trans>
+					</h1>
 					<p className="text-muted-foreground text-sm">
-						Track your daily routines.
+						<Trans>Track your daily routines.</Trans>
 					</p>
 				</header>
 
@@ -63,12 +66,22 @@ function HabitsPage() {
 						aria-hidden="true"
 					/>
 					<div className="flex flex-col gap-1">
-						<p className="font-medium text-sm">No habits yet</p>
+						<p className="font-medium text-sm">
+							<Trans>No habits yet</Trans>
+						</p>
 						<p className="text-muted-foreground text-sm">
-							Build streaks by adding habits you want to do every day.
+							<Trans>
+								Build streaks by adding habits you want to do every day.
+							</Trans>
 						</p>
 					</div>
-					<HabitSheet trigger={<Button>Create your first habit</Button>} />
+					<HabitSheet
+						trigger={
+							<Button>
+								<Trans>Create your first habit</Trans>
+							</Button>
+						}
+					/>
 				</div>
 			</div>
 		);
@@ -77,9 +90,11 @@ function HabitsPage() {
 	return (
 		<div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-8">
 			<header>
-				<h1 className="font-medium text-lg">Habits</h1>
+				<h1 className="font-medium text-lg">
+					<Trans>Habits</Trans>
+				</h1>
 				<p className="text-muted-foreground text-sm">
-					Track your daily routines.
+					<Trans>Track your daily routines.</Trans>
 				</p>
 			</header>
 

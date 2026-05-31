@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { DailyBucket } from "#/domain";
+import { renderWithI18n } from "#/i18n/test-utils";
 import { DailySpendChart } from "./daily-spend-chart";
 
 afterEach(() => {
@@ -19,14 +20,14 @@ function buckets(): DailyBucket[] {
 }
 
 describe("DailySpendChart", () => {
-	it("renders the card title", () => {
-		render(<DailySpendChart buckets={buckets()} />);
+	it("renders the card title — en", () => {
+		renderWithI18n("en", "EUR", <DailySpendChart buckets={buckets()} />);
 
 		expect(screen.getByText("Daily spend")).toBeTruthy();
 	});
 
-	it("surfaces the spends-only vs. net-pace caption", () => {
-		render(<DailySpendChart buckets={buckets()} />);
+	it("surfaces the spends-only vs. net-pace caption — en", () => {
+		renderWithI18n("en", "EUR", <DailySpendChart buckets={buckets()} />);
 
 		// The acceptance criterion: the discrepancy with the net pace line is
 		// spelled out so an adjustment-day mismatch isn't confusing.
@@ -41,12 +42,14 @@ describe("DailySpendChart", () => {
 		// The chart is gated behind a client mount; under jsdom Recharts has no
 		// real layout, so we assert on the card chrome rather than the SVG
 		// internals (brittle / size-dependent under jsdom).
-		expect(() => render(<DailySpendChart buckets={buckets()} />)).not.toThrow();
+		expect(() =>
+			renderWithI18n("en", "EUR", <DailySpendChart buckets={buckets()} />),
+		).not.toThrow();
 		expect(screen.getByText("Daily spend")).toBeTruthy();
 	});
 
-	it("shows the empty affordance when there are no buckets", () => {
-		render(<DailySpendChart buckets={[]} />);
+	it("shows the empty affordance when there are no buckets — en", () => {
+		renderWithI18n("en", "EUR", <DailySpendChart buckets={[]} />);
 
 		expect(screen.getByText("Daily spend")).toBeTruthy();
 		expect(screen.getByText(/No spending yet this cycle/i)).toBeTruthy();

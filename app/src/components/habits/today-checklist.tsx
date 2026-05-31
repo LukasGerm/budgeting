@@ -9,6 +9,7 @@
  * Slice 6.
  */
 
+import { Trans, useLingui } from "@lingui/react/macro";
 import { resolveHabitIcon } from "#/components/habits/habit-icons";
 import { HabitStreakBadge } from "#/components/habits/habit-streak-badge";
 import { Card, CardContent, CardHeader } from "#/components/ui/card";
@@ -26,15 +27,19 @@ interface TodayChecklistProps {
 }
 
 export function TodayChecklist({ habits, onToggleToday }: TodayChecklistProps) {
+	const { t } = useLingui();
 	return (
 		<Card>
 			<CardHeader className="px-4 pb-2 pt-4">
-				<p className="font-medium text-sm leading-none">Today</p>
+				<p className="font-medium text-sm leading-none">
+					<Trans>Today</Trans>
+				</p>
 			</CardHeader>
 			<CardContent className="px-4 pb-3">
 				<ul className="flex flex-col divide-y divide-border">
 					{habits.map((habit) => {
 						const Icon = resolveHabitIcon(habit.icon);
+						const name = habit.name;
 						return (
 							<li
 								key={habit.id}
@@ -58,7 +63,7 @@ export function TodayChecklist({ habits, onToggleToday }: TodayChecklistProps) {
 								{/* Checkbox — right-most */}
 								<Checkbox
 									checked={habit.todayDone}
-									aria-label={`Mark ${habit.name} done today`}
+									aria-label={t`Mark ${name} done today`}
 									onCheckedChange={() =>
 										onToggleToday(habit.id, habit.todayDone)
 									}

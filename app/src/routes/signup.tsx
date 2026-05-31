@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import {
 	createFileRoute,
 	Link,
@@ -8,6 +9,10 @@ import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
+import {
+	errorCodeFromBetterAuth,
+	useErrorMessage,
+} from "#/i18n/use-error-message";
 import { authClient } from "#/lib/auth-client";
 import { getServerSession } from "#/lib/auth-server";
 
@@ -23,6 +28,7 @@ export const Route = createFileRoute("/signup")({
 
 function SignupPage() {
 	const router = useRouter();
+	const getErrorMessage = useErrorMessage();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
@@ -42,7 +48,8 @@ function SignupPage() {
 		});
 		setSubmitting(false);
 		if (result.error) {
-			setError(result.error.message ?? "Could not sign up.");
+			const code = errorCodeFromBetterAuth(result) ?? "UNKNOWN";
+			setError(getErrorMessage(code));
 			return;
 		}
 		await router.invalidate();
@@ -52,14 +59,18 @@ function SignupPage() {
 	return (
 		<div className="mx-auto flex min-h-svh max-w-sm flex-col justify-center gap-6 p-8">
 			<div className="flex flex-col gap-1">
-				<h1 className="text-2xl font-semibold">Sign up</h1>
+				<h1 className="text-2xl font-semibold">
+					<Trans>Sign up</Trans>
+				</h1>
 				<p className="text-muted-foreground text-sm">
-					Create an account to start tracking your budget.
+					<Trans>Create an account to start tracking your budget.</Trans>
 				</p>
 			</div>
 			<form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
 				<div className="flex flex-col gap-2">
-					<Label htmlFor="email">Email</Label>
+					<Label htmlFor="email">
+						<Trans>Email</Trans>
+					</Label>
 					<Input
 						id="email"
 						name="email"
@@ -71,7 +82,9 @@ function SignupPage() {
 					/>
 				</div>
 				<div className="flex flex-col gap-2">
-					<Label htmlFor="password">Password</Label>
+					<Label htmlFor="password">
+						<Trans>Password</Trans>
+					</Label>
 					<Input
 						id="password"
 						name="password"
@@ -89,14 +102,20 @@ function SignupPage() {
 					</p>
 				) : null}
 				<Button type="submit" disabled={submitting}>
-					{submitting ? "Creating account…" : "Sign up"}
+					{submitting ? (
+						<Trans>Creating account…</Trans>
+					) : (
+						<Trans>Sign up</Trans>
+					)}
 				</Button>
 			</form>
 			<p className="text-muted-foreground text-sm">
-				Already have an account?{" "}
-				<Link to="/login" className="text-foreground underline">
-					Log in
-				</Link>
+				<Trans>
+					Already have an account?{" "}
+					<Link to="/login" className="text-foreground underline">
+						Log in
+					</Link>
+				</Trans>
 			</p>
 		</div>
 	);

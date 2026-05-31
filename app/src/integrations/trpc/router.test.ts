@@ -10,9 +10,15 @@
  * guarantees live. `#/lib/auth` is mocked only to keep importing the router
  * free of Better Auth / env side effects; the caller's context is built
  * directly, so the auth module itself is never exercised.
+ *
+ * A "router ↔ error-codes catalog" contract block at the bottom asserts that
+ * every validation code the router emits is a known `AppErrorCode`. This
+ * catches renames that would silently degrade to the generic fallback.
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { ZodError } from "zod";
+import { isAppErrorCode } from "#/i18n/error-codes";
 
 const updateMany = vi.fn();
 const deleteMany = vi.fn();
@@ -208,5 +214,111 @@ describe("expense.add", () => {
 			caller(null).expense.add({ kind: "spend", amountCents: 1_000 }),
 		).rejects.toThrow();
 		expect(create).not.toHaveBeenCalled();
+	});
+});
+
+// ---------------------------------------------------------------------------
+// Router ↔ error-codes catalog contract
+//
+// Each test triggers the real validation path, catches the TRPCError thrown by
+// `createCaller`, and asserts that:
+//   (a) the first Zod issue message is exactly the expected string, and
+//   (b) that string is a known `AppErrorCode` (i.e. it is in the catalog).
+//
+// This guard makes a future rename (e.g. "SPEND_NOT_POSITIVE" → "NON_POSITIVE")
+// fail loudly here instead of silently degrading to the generic toast fallback.
+// ---------------------------------------------------------------------------
+
+/**
+ * Helper: call `fn()`, expect it to throw a TRPCError whose Zod cause carries
+ * `expectedCode` as its first issue message, and assert the code is catalogued.
+ */
+async function expectErrorCode(
+	fn: () => Promise<unknown>,
+	expectedCode: string,
+): Promise<void> {
+	let caught: unknown;
+	try {
+		await fn();
+	} catch (e) {
+		caught = e;
+	}
+	expect(
+		caught,
+		`expected procedure to throw for code ${expectedCode}`,
+	).toBeDefined();
+	const err = caught as { cause?: ZodError };
+	const firstMessage = err.cause?.issues?.[0]?.message;
+	expect(firstMessage).toBe(expectedCode);
+	expect(isAppErrorCode(firstMessage)).toBe(true);
+}
+
+describe("router ↔ error-codes catalog contract", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it("expense.add — SPEND_NOT_POSITIVE is a known AppErrorCode", async () => {
+		await expectErrorCode(
+			() => caller("user-a").expense.add({ kind: "spend", amountCents: 0 }),
+			"SPEND_NOT_POSITIVE",
+		);
+	});
+
+	it("expense.add — ADJUSTMENT_ZERO is a known AppErrorCode", async () => {
+		await expectErrorCode(
+			() =>
+				caller("user-a").expense.add({ kind: "adjustment", amountCents: 0 }),
+			"ADJUSTMENT_ZERO",
+		);
+	});
+
+	it("expense.update — AMOUNT_ZERO is a known AppErrorCode", async () => {
+		await expectErrorCode(
+			() => caller("user-a").expense.update({ id: "e1", amountCents: 0 }),
+			"AMOUNT_ZERO",
+		);
+	});
+
+	it("budget.set — BUDGET_NOT_POSITIVE is a known AppErrorCode", async () => {
+		await expectErrorCode(
+			() =>
+				caller("user-a").budget.set({
+					monthlyAmountCents: -1,
+					anchorDay: 1,
+				}),
+			"BUDGET_NOT_POSITIVE",
+		);
+	});
+
+	it("budget.set — ANCHOR_OUT_OF_RANGE is a known AppErrorCode (below 1)", async () => {
+		await expectErrorCode(
+			() =>
+				caller("user-a").budget.set({
+					monthlyAmountCents: 10_000,
+					anchorDay: 0,
+				}),
+			"ANCHOR_OUT_OF_RANGE",
+		);
+	});
+
+	it("budget.set — ANCHOR_OUT_OF_RANGE is a known AppErrorCode (above 31)", async () => {
+		await expectErrorCode(
+			() =>
+				caller("user-a").budget.set({
+					monthlyAmountCents: 10_000,
+					anchorDay: 32,
+				}),
+			"ANCHOR_OUT_OF_RANGE",
+		);
+	});
+
+	it("habit.create — HABIT_NAME_REQUIRED is a known AppErrorCode", async () => {
+		await expectErrorCode(
+			() =>
+				// biome-ignore lint/suspicious/noExplicitAny: intentionally testing habit router with missing DB mock
+				caller("user-a").habit.create({ name: "   ", icon: "BookOpen" as any }),
+			"HABIT_NAME_REQUIRED",
+		);
 	});
 });

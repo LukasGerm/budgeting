@@ -15,6 +15,7 @@
  * same" phrasing.
  */
 
+import { Trans } from "@lingui/react/macro";
 import { Card, CardContent } from "#/components/ui/card";
 import type { CycleComparison } from "#/domain";
 
@@ -46,27 +47,29 @@ export function VsLastDelta({ comparison }: VsLastDeltaProps) {
  * far". On a zero baseline (`pct === null`): "About the same as last cycle so far"
  * (both zero) or "**More** than last cycle so far" (current outspent a zero last
  * cycle). An exactly-equal non-zero comparison reads "About the same…".
+ *
+ * Each branch is a self-contained `<Trans>` with a fully-translated whole
+ * sentence so that no raw English word (e.g. "more"/"less") leaks into the
+ * German UI as an untranslated interpolation.
  */
 function renderBody(comparison: CycleComparison) {
 	const { pct, direction } = comparison;
 
 	if (direction === "same") {
-		return "About the same as last cycle so far";
+		return <Trans>About the same as last cycle so far</Trans>;
 	}
 
 	if (pct === null) {
-		// Zero baseline with a non-zero current (direction is "more").
-		return (
-			<>
-				<span className="font-semibold">More</span> than last cycle so far
-			</>
-		);
+		// Zero baseline with a non-zero current spend (direction is always "more").
+		return <Trans>More than last cycle so far</Trans>;
 	}
 
-	return (
-		<>
-			<span className="font-semibold tabular-nums">{pct}% </span>
-			<span className="font-semibold">{direction}</span> than last cycle so far
-		</>
-	);
+	const pctSpan = <span className="font-semibold tabular-nums">{pct}%</span>;
+
+	if (direction === "more") {
+		return <Trans>{pctSpan} more than last cycle so far</Trans>;
+	}
+
+	// direction === "less"
+	return <Trans>{pctSpan} less than last cycle so far</Trans>;
 }

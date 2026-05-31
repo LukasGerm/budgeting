@@ -12,7 +12,9 @@
  * daily/monthly numbers recompute from the new total.
  */
 
+import { Trans } from "@lingui/react/macro";
 import { createFileRoute } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { EditableExpenseRow } from "#/components/expense-row";
 import type { Expense } from "#/domain";
 import {
@@ -21,6 +23,7 @@ import {
 	useExpenses,
 	useUpdateExpense,
 } from "#/hooks/use-expenses";
+import { errorCodeFromTRPC, useErrorMessage } from "#/i18n/use-error-message";
 import { withLoginRedirect } from "#/lib/loader-auth";
 
 export const Route = createFileRoute("/_authed/history")({
@@ -50,12 +53,17 @@ function HistoryPage() {
 	const expenses = [...useExpenses(now)].sort(byNewest);
 	const updateExpense = useUpdateExpense();
 	const deleteExpense = useDeleteExpense();
+	const getErrorMessage = useErrorMessage();
 
 	return (
 		<div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-8">
 			<header>
-				<h1 className="font-medium text-lg">History</h1>
-				<p className="text-muted-foreground text-sm">This cycle's expenses</p>
+				<h1 className="font-medium text-lg">
+					<Trans>History</Trans>
+				</h1>
+				<p className="text-muted-foreground text-sm">
+					<Trans>This cycle's expenses</Trans>
+				</p>
 			</header>
 
 			{expenses.length === 0 ? (
@@ -67,8 +75,27 @@ function HistoryPage() {
 							<EditableExpenseRow
 								expense={expense}
 								now={now}
-								onUpdate={(input) => updateExpense.mutate(input)}
-								onDelete={(id) => deleteExpense.mutate({ id })}
+								onUpdate={(input) =>
+									updateExpense.mutate(input, {
+										onError: (e) =>
+											toast.error(
+												getErrorMessage(errorCodeFromTRPC(e) ?? "SAVE_FAILED"),
+											),
+									})
+								}
+								onDelete={(id) =>
+									deleteExpense.mutate(
+										{ id },
+										{
+											onError: (e) =>
+												toast.error(
+													getErrorMessage(
+														errorCodeFromTRPC(e) ?? "SAVE_FAILED",
+													),
+												),
+										},
+									)
+								}
 								updatePending={updateExpense.isPending}
 								deletePending={deleteExpense.isPending}
 							/>
@@ -83,9 +110,11 @@ function HistoryPage() {
 function EmptyState() {
 	return (
 		<div className="flex flex-1 flex-col items-center justify-center gap-2 py-16 text-center">
-			<p className="font-medium">No expenses yet this cycle</p>
+			<p className="font-medium">
+				<Trans>No expenses yet this cycle</Trans>
+			</p>
 			<p className="text-muted-foreground text-sm">
-				Anything you log will show up here.
+				<Trans>Anything you log will show up here.</Trans>
 			</p>
 		</div>
 	);

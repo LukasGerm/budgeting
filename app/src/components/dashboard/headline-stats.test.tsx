@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { CycleSpendSummary } from "#/domain";
 import { Money } from "#/domain";
+import { renderWithI18n } from "#/i18n/test-utils";
 import { HeadlineStats } from "./headline-stats";
 
 afterEach(() => {
@@ -25,21 +26,49 @@ function summary(
 }
 
 describe("HeadlineStats", () => {
-	it("renders the formatted total, average and days left", () => {
-		render(<HeadlineStats summary={summary()} />);
+	it("renders formatted total, average and days left — de/EUR (de-DE format)", () => {
+		renderWithI18n("de", "EUR", <HeadlineStats summary={summary()} />);
 
-		// Money.format() is de-DE EUR: 12 345 cents → "123,45 €".
-		expect(screen.getByText("123,45 €")).toBeTruthy();
-		expect(screen.getByText("11,22 €")).toBeTruthy();
-		expect(screen.getByText("20 days")).toBeTruthy();
+		// de-DE EUR: 12 345 cents → "123,45 €" (with NBSP before €)
+		expect(screen.getByText(/123,45/)).toBeTruthy();
+		expect(screen.getByText(/11,22/)).toBeTruthy();
+		// "20 Tage" in German (or similar plural form from catalog)
+		expect(screen.getByText(/20/)).toBeTruthy();
 
+		// German label translations (from DE catalog)
+		expect(screen.getByText("Diese Periode ausgegeben")).toBeTruthy();
+	});
+
+	it("renders formatted total and average — en/EUR (en-GB format)", () => {
+		renderWithI18n("en", "EUR", <HeadlineStats summary={summary()} />);
+
+		// en-GB EUR: 12 345 cents → "€123.45"
+		expect(screen.getByText(/123\.45/)).toBeTruthy();
+		expect(screen.getByText(/11\.22/)).toBeTruthy();
+	});
+
+	it("renders English stat labels — en", () => {
+		renderWithI18n("en", "EUR", <HeadlineStats summary={summary()} />);
 		expect(screen.getByText("Spent this cycle")).toBeTruthy();
 		expect(screen.getByText("Average / day")).toBeTruthy();
 		expect(screen.getByText("Days left")).toBeTruthy();
 	});
 
-	it("uses the singular unit when one day is left", () => {
-		render(<HeadlineStats summary={summary({ daysLeft: 1 })} />);
+	it("uses the singular unit when one day is left — en", () => {
+		renderWithI18n(
+			"en",
+			"EUR",
+			<HeadlineStats summary={summary({ daysLeft: 1 })} />,
+		);
 		expect(screen.getByText("1 day")).toBeTruthy();
+	});
+
+	it("uses the plural unit for multiple days left — en", () => {
+		renderWithI18n(
+			"en",
+			"EUR",
+			<HeadlineStats summary={summary({ daysLeft: 20 })} />,
+		);
+		expect(screen.getByText("20 days")).toBeTruthy();
 	});
 });

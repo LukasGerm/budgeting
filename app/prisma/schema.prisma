@@ -18,6 +18,10 @@ model User {
   image         String?
   createdAt     DateTime
   updatedAt     DateTime
+  // i18n preferences — written by user.setPreferences tRPC mutation.
+  // Safe defaults: existing rows stay unaffected by the migration.
+  language      String           @default("en")
+  currency      String           @default("EUR")
   sessions      Session[]
   accounts      Account[]
   budget        Budget?

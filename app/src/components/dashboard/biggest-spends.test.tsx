@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { type Expense, Money } from "#/domain";
+import { renderWithI18n } from "#/i18n/test-utils";
 import { BiggestSpends } from "./biggest-spends";
 
 afterEach(() => {
@@ -20,32 +21,49 @@ function spend(amountCents: number, note: string | null, id: string): Expense {
 }
 
 describe("BiggestSpends", () => {
-	it("renders one row per spend with its formatted amount and note", () => {
+	it("renders one row per spend with its formatted amount and note — de/EUR", () => {
 		const spends = [
 			spend(8_000, "Groceries", "a"),
 			spend(5_000, "Dinner", "b"),
 			spend(3_000, null, "c"),
 		];
-		const { container } = render(<BiggestSpends spends={spends} />);
+		const { container } = renderWithI18n(
+			"de",
+			"EUR",
+			<BiggestSpends spends={spends} />,
+		);
 
-		expect(screen.getByText("Biggest spends")).toBeTruthy();
+		// DE: "Bigger spends" → "Größte Ausgaben"
+		expect(screen.getByText("Größte Ausgaben")).toBeTruthy();
 
 		// One <li> per spend.
 		expect(container.querySelectorAll("li")).toHaveLength(3);
 
-		// Money.format() is de-DE EUR: 8 000 cents → "80,00 €".
-		expect(screen.getByText("80,00 €")).toBeTruthy();
-		expect(screen.getByText("50,00 €")).toBeTruthy();
-		expect(screen.getByText("30,00 €")).toBeTruthy();
+		// de-DE EUR: 8 000 cents → "80,00 €" (with NBSP).
+		expect(screen.getByText(/80,00/)).toBeTruthy();
+		expect(screen.getByText(/50,00/)).toBeTruthy();
+		expect(screen.getByText(/30,00/)).toBeTruthy();
 
-		// Notes render, and a null note falls back to "No note".
+		// Notes render, and a null note falls back to the locale's "No note" equivalent.
+		// DE: "No note" → "Keine Notiz"
 		expect(screen.getByText("Groceries")).toBeTruthy();
 		expect(screen.getByText("Dinner")).toBeTruthy();
-		expect(screen.getByText("No note")).toBeTruthy();
+		expect(screen.getByText("Keine Notiz")).toBeTruthy();
+	});
+
+	it("renders the card title in German — de", () => {
+		const spends = [spend(8_000, "Test", "a")];
+		renderWithI18n("de", "EUR", <BiggestSpends spends={spends} />);
+		// German translation from catalog
+		expect(screen.getByText("Größte Ausgaben")).toBeTruthy();
 	});
 
 	it("renders nothing when the list is empty", () => {
-		const { container } = render(<BiggestSpends spends={[]} />);
+		const { container } = renderWithI18n(
+			"en",
+			"EUR",
+			<BiggestSpends spends={[]} />,
+		);
 
 		expect(container.innerHTML).toBe("");
 		expect(screen.queryByText("Biggest spends")).toBeNull();

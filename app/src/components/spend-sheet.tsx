@@ -18,6 +18,7 @@
  * the sheet open with the entered values intact.
  */
 
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Plus } from "lucide-react";
 import { useReducer, useState } from "react";
 import { toast } from "sonner";
@@ -37,8 +38,13 @@ import {
 } from "#/components/ui/drawer";
 import { adjustmentAmountCents, Money } from "#/domain";
 import { useAddExpense, useDeleteExpense } from "#/hooks/use-expenses";
+import { errorCodeFromTRPC, useErrorMessage } from "#/i18n/use-error-message";
+import { useFormat } from "#/i18n/use-format";
 
 export function SpendSheet() {
+	const { formatMoney } = useFormat();
+	const { t } = useLingui();
+	const getErrorMessage = useErrorMessage();
 	const [open, setOpen] = useState(false);
 	const [form, dispatch] = useReducer(
 		entryFormReducer,
@@ -66,12 +72,12 @@ export function SpendSheet() {
 		const amountCents = isAdjustment
 			? adjustmentAmountCents(form.direction, magnitudeCents)
 			: magnitudeCents;
-		const magnitudeLabel = Money.fromCents(magnitudeCents).format();
+		const magnitudeLabel = formatMoney(magnitudeCents);
 		const toastText = !isAdjustment
-			? `Logged ${magnitudeLabel}`
+			? t`Logged ${magnitudeLabel}`
 			: form.direction === "topup"
-				? `Added ${magnitudeLabel}`
-				: `Set aside ${magnitudeLabel}`;
+				? t`Added ${magnitudeLabel}`
+				: t`Set aside ${magnitudeLabel}`;
 
 		addExpense.mutate(
 			{ kind: form.kind, amountCents, note },
@@ -85,7 +91,7 @@ export function SpendSheet() {
 					const toastId = toast(toastText, {
 						duration: 5000,
 						action: {
-							label: "Undo",
+							label: t`Undo`,
 							onClick: () => {
 								deleteExpense.mutate({ id: created.id });
 								toast.dismiss(toastId);
@@ -93,9 +99,9 @@ export function SpendSheet() {
 						},
 					});
 				},
-				onError: () => {
+				onError: (e) => {
 					// Keep the sheet open with the entered values preserved.
-					toast.error("Couldn't save that. Check your connection.");
+					toast.error(getErrorMessage(errorCodeFromTRPC(e) ?? "SAVE_FAILED"));
 				},
 			},
 		);
@@ -107,7 +113,7 @@ export function SpendSheet() {
 				<Button
 					size="icon"
 					className="fixed right-6 bottom-20 z-40 size-16 rounded-full shadow-lg"
-					aria-label="Log a spend"
+					aria-label={t`Log a spend`}
 				>
 					<Plus className="size-7" />
 				</Button>
@@ -115,10 +121,14 @@ export function SpendSheet() {
 			<DrawerContent>
 				<div className="mx-auto flex w-full max-w-md flex-col gap-6 p-4 pb-8">
 					<DrawerHeader className="p-0">
-						<DrawerTitle className="sr-only">Log a spend or adjust</DrawerTitle>
+						<DrawerTitle className="sr-only">
+							<Trans>Log a spend or adjust</Trans>
+						</DrawerTitle>
 						<DrawerDescription className="sr-only">
-							Choose Spend or Adjust, enter an amount and an optional note, then
-							confirm.
+							<Trans>
+								Choose Spend or Adjust, enter an amount and an optional note,
+								then confirm.
+							</Trans>
 						</DrawerDescription>
 					</DrawerHeader>
 
@@ -127,8 +137,8 @@ export function SpendSheet() {
 						dispatch={dispatch}
 						amountCents={magnitudeCents}
 						onSubmit={handleSubmit}
-						submitLabel={form.kind === "adjustment" ? "Add" : "Log"}
-						submittingLabel="Saving…"
+						submitLabel={form.kind === "adjustment" ? t`Add` : t`Log`}
+						submittingLabel={t`Saving…`}
 						pending={addExpense.isPending}
 						showKindToggle
 					/>

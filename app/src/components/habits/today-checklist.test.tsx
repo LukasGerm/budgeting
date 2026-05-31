@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { HabitWithStats } from "#/hooks/use-habits";
+import { renderWithI18n } from "#/i18n/test-utils";
 import { TodayChecklist } from "./today-checklist";
 
 afterEach(() => {
@@ -45,29 +46,43 @@ const habits: HabitWithStats[] = [habitA, habitB];
 
 describe("TodayChecklist", () => {
 	it("renders one row per habit", () => {
-		const { container } = render(
+		const { container } = renderWithI18n(
+			"en",
+			"EUR",
 			<TodayChecklist habits={habits} onToggleToday={vi.fn()} />,
 		);
 		expect(container.querySelectorAll("li")).toHaveLength(2);
 	});
 
 	it("renders each habit name", () => {
-		render(<TodayChecklist habits={habits} onToggleToday={vi.fn()} />);
+		renderWithI18n(
+			"en",
+			"EUR",
+			<TodayChecklist habits={habits} onToggleToday={vi.fn()} />,
+		);
 		expect(screen.getByText("Drink water")).toBeTruthy();
 		expect(screen.getByText("Read a book")).toBeTruthy();
 	});
 
 	it("renders each habit's current streak count", () => {
-		render(<TodayChecklist habits={habits} onToggleToday={vi.fn()} />);
+		renderWithI18n(
+			"en",
+			"EUR",
+			<TodayChecklist habits={habits} onToggleToday={vi.fn()} />,
+		);
 		// HabitStreakBadge renders the streak number as plain text.
 		expect(screen.getByText("5")).toBeTruthy();
 		expect(screen.getByText("0")).toBeTruthy();
 	});
 
-	it("the done habit's checkbox is checked, the undone one is unchecked", () => {
-		render(<TodayChecklist habits={habits} onToggleToday={vi.fn()} />);
+	it("the done habit's checkbox is checked, the undone one is unchecked — en", () => {
+		renderWithI18n(
+			"en",
+			"EUR",
+			<TodayChecklist habits={habits} onToggleToday={vi.fn()} />,
+		);
 
-		// Checkboxes have aria-label "Mark <name> done today".
+		// Checkboxes have aria-label "Mark <name> done today" (en translation).
 		const doneCheckbox = screen.getByRole("checkbox", {
 			name: "Mark Drink water done today",
 		}) as HTMLInputElement;
@@ -82,7 +97,11 @@ describe("TodayChecklist", () => {
 
 	it("clicking a checkbox calls onToggleToday with the habit id and its current todayDone", () => {
 		const onToggleToday = vi.fn();
-		render(<TodayChecklist habits={habits} onToggleToday={onToggleToday} />);
+		renderWithI18n(
+			"en",
+			"EUR",
+			<TodayChecklist habits={habits} onToggleToday={onToggleToday} />,
+		);
 
 		// Click the undone habit's checkbox → should call with (id, false).
 		const undoneCheckbox = screen.getByRole("checkbox", {
@@ -103,15 +122,33 @@ describe("TodayChecklist", () => {
 		expect(onToggleToday).toHaveBeenCalledWith("a", true);
 	});
 
-	it("renders a 'Today' heading", () => {
-		render(<TodayChecklist habits={habits} onToggleToday={vi.fn()} />);
+	it("renders a 'Today' heading — en", () => {
+		renderWithI18n(
+			"en",
+			"EUR",
+			<TodayChecklist habits={habits} onToggleToday={vi.fn()} />,
+		);
 		expect(screen.getByText("Today")).toBeTruthy();
 	});
 
 	it("renders habits in array order", () => {
-		render(<TodayChecklist habits={habits} onToggleToday={vi.fn()} />);
+		renderWithI18n(
+			"en",
+			"EUR",
+			<TodayChecklist habits={habits} onToggleToday={vi.fn()} />,
+		);
 		const items = screen.getAllByRole("listitem");
 		expect(items[0].textContent).toContain("Drink water");
 		expect(items[1].textContent).toContain("Read a book");
+	});
+
+	it("renders a translated heading in German — de", () => {
+		renderWithI18n(
+			"de",
+			"EUR",
+			<TodayChecklist habits={habits} onToggleToday={vi.fn()} />,
+		);
+		// German translation for "Today" (set in the DE catalog)
+		expect(screen.getByText("Heute")).toBeTruthy();
 	});
 });

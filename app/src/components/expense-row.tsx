@@ -17,6 +17,7 @@
  * secondary action.
  */
 
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { useReducer, useState } from "react";
 import {
 	EntryForm,
@@ -35,11 +36,13 @@ import {
 	adjustmentAmountCents,
 	adjustmentDirection,
 	type Expense,
-	formatRelativeDate,
+	getRelativeDate,
 	Money,
 } from "#/domain";
+import { useFormat } from "#/i18n/use-format";
 
 export function ExpenseRow({ expense, now }: { expense: Expense; now: Date }) {
+	const { formatMoney } = useFormat();
 	const isAdjustment = expense.kind === "adjustment";
 	const direction = isAdjustment
 		? adjustmentDirection(expense.amount.toCents())
@@ -47,21 +50,13 @@ export function ExpenseRow({ expense, now }: { expense: Expense; now: Date }) {
 
 	// Spends show the plain amount; adjustments show a user-facing signed amount
 	// (top-up "+", set-aside "−") over the magnitude.
-	const magnitude = Money.fromCents(
-		Math.abs(expense.amount.toCents()),
-	).format();
+	const magnitude = formatMoney(Math.abs(expense.amount.toCents()));
 	const amountText =
 		direction === null
-			? expense.amount.format()
+			? formatMoney(expense.amount.toCents())
 			: `${direction === "topup" ? "+" : "−"}${magnitude}`;
 
-	const label =
-		direction === "topup"
-			? "Top-up"
-			: direction === "setaside"
-				? "Set aside"
-				: null;
-	const secondary = [label, expense.note].filter(Boolean).join(" · ");
+	const rel = getRelativeDate(expense.createdAt, now);
 
 	return (
 		<div className="flex items-baseline justify-between gap-3 py-3">
@@ -73,16 +68,57 @@ export function ExpenseRow({ expense, now }: { expense: Expense; now: Date }) {
 				>
 					{amountText}
 				</span>
-				{secondary ? (
-					<span className="truncate text-muted-foreground text-sm">
-						{secondary}
-					</span>
-				) : null}
+				<ExpenseSecondaryLine direction={direction} note={expense.note} />
 			</div>
 			<span className="shrink-0 text-muted-foreground text-sm">
-				{formatRelativeDate(expense.createdAt, now)}
+				{rel.kind === "today" ? (
+					<Trans>today</Trans>
+				) : rel.kind === "yesterday" ? (
+					<Trans>yesterday</Trans>
+				) : (
+					<Plural value={rel.days} one="# day ago" other="# days ago" />
+				)}
 			</span>
 		</div>
+	);
+}
+
+/**
+ * The secondary line under the amount: "Top-up · note" or "Set aside · note"
+ * or just the note. Extracted so the translated labels live in a component
+ * where `<Trans>` is natural and don't need to be assembled from raw strings.
+ */
+function ExpenseSecondaryLine({
+	direction,
+	note,
+}: {
+	direction: "topup" | "setaside" | null;
+	note: string | null | undefined;
+}) {
+	const labelNode =
+		direction === "topup" ? (
+			<Trans>Top-up</Trans>
+		) : direction === "setaside" ? (
+			<Trans>Set aside</Trans>
+		) : null;
+
+	if (!labelNode && !note) return null;
+	if (labelNode && !note) {
+		return (
+			<span className="truncate text-muted-foreground text-sm">
+				{labelNode}
+			</span>
+		);
+	}
+	if (!labelNode && note) {
+		return (
+			<span className="truncate text-muted-foreground text-sm">{note}</span>
+		);
+	}
+	return (
+		<span className="truncate text-muted-foreground text-sm">
+			{labelNode} · {note}
+		</span>
 	);
 }
 
@@ -115,6 +151,7 @@ export function EditableExpenseRow({
 	updatePending?: boolean;
 	deletePending?: boolean;
 }) {
+	const { t } = useLingui();
 	const [open, setOpen] = useState(false);
 	const [form, dispatch] = useReducer(
 		entryFormReducer,
@@ -159,9 +196,14 @@ export function EditableExpenseRow({
 			<DrawerContent>
 				<div className="mx-auto flex w-full max-w-md flex-col gap-6 p-4 pb-8">
 					<DrawerHeader className="p-0">
-						<DrawerTitle className="sr-only">Edit entry</DrawerTitle>
+						<DrawerTitle className="sr-only">
+							<Trans>Edit entry</Trans>
+						</DrawerTitle>
 						<DrawerDescription className="sr-only">
-							Change the amount or note and tap Save. The day can't be changed.
+							<Trans>
+								Change the amount or note and tap Save. The day can't be
+								changed.
+							</Trans>
 						</DrawerDescription>
 					</DrawerHeader>
 
@@ -170,8 +212,8 @@ export function EditableExpenseRow({
 						dispatch={dispatch}
 						amountCents={magnitudeCents}
 						onSubmit={handleSubmit}
-						submitLabel="Save"
-						submittingLabel="Saving…"
+						submitLabel={t`Save`}
+						submittingLabel={t`Saving…`}
 						pending={!!updatePending}
 						onDelete={() => onDelete(expense.id)}
 						deletePending={deletePending}

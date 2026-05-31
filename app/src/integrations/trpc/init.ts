@@ -1,5 +1,7 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
+import { ZodError } from "zod";
+import { isAppErrorCode } from "#/i18n/error-codes";
 
 /**
  * Per-request tRPC context shape: the authenticated caller's id (or null for
@@ -18,6 +20,38 @@ export interface TRPCContext {
 
 const t = initTRPC.context<TRPCContext>().create({
 	transformer: superjson,
+	/**
+	 * Error formatter — surfaces a stable `appErrorCode` on the client-readable
+	 * `shape.data` so the client never has to parse `error.message` JSON.
+	 *
+	 * Rules:
+	 * - ZodError: read the first issue's `message`; if it's a known AppErrorCode,
+	 *   surface it; otherwise leave `appErrorCode` null (client falls back to
+	 *   generic message).
+	 * - TRPCError whose `message` is itself a known code (e.g. thrown manually):
+	 *   surface the message directly as the code.
+	 * - Everything else: null → client uses generic fallback.
+	 */
+	errorFormatter({ shape, error }) {
+		let appErrorCode: string | null = null;
+
+		if (error.cause instanceof ZodError) {
+			const firstMessage = error.cause.issues[0]?.message;
+			if (firstMessage && isAppErrorCode(firstMessage)) {
+				appErrorCode = firstMessage;
+			}
+		} else if (error instanceof TRPCError && isAppErrorCode(error.message)) {
+			appErrorCode = error.message;
+		}
+
+		return {
+			...shape,
+			data: {
+				...shape.data,
+				appErrorCode,
+			},
+		};
+	},
 });
 
 export const createTRPCRouter = t.router;

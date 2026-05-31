@@ -19,6 +19,7 @@
  * is the reliable Radix pattern for menu → dialog/drawer flows.
  */
 
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Ellipsis } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -49,6 +50,7 @@ import {
 	useDeleteHabit,
 	useToggleCompletion,
 } from "#/hooks/use-habits";
+import { errorCodeFromTRPC, useErrorMessage } from "#/i18n/use-error-message";
 
 interface HabitCardProps {
 	habit: HabitWithStats;
@@ -60,6 +62,8 @@ export function HabitCard({ habit, now }: HabitCardProps) {
 	const Icon = resolveHabitIcon(habit.icon);
 	const toggle = useToggleCompletion();
 	const deleteHabit = useDeleteHabit();
+	const { t } = useLingui();
+	const getErrorMessage = useErrorMessage();
 
 	// Controlled state for the edit sheet and delete confirm dialog.
 	// Using card state rather than nesting triggers inside DropdownMenuItems
@@ -74,11 +78,11 @@ export function HabitCard({ habit, now }: HabitCardProps) {
 			{
 				onSuccess: () => {
 					setConfirmingDelete(false);
-					toast("Habit deleted");
+					toast(t`Habit deleted`);
 				},
-				onError: () => {
+				onError: (e) => {
 					setConfirmingDelete(false);
-					toast.error("Couldn't delete that. Check your connection.");
+					toast.error(getErrorMessage(errorCodeFromTRPC(e) ?? "SAVE_FAILED"));
 				},
 			},
 		);
@@ -105,20 +109,20 @@ export function HabitCard({ habit, now }: HabitCardProps) {
 								variant="ghost"
 								size="icon"
 								className="size-7 shrink-0 text-muted-foreground"
-								aria-label="Habit options"
+								aria-label={t`Habit options`}
 							>
 								<Ellipsis className="size-4" />
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end">
 							<DropdownMenuItem onSelect={() => setEditing(true)}>
-								Edit
+								<Trans>Edit</Trans>
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								onSelect={() => setConfirmingDelete(true)}
 								className="text-destructive focus:text-destructive"
 							>
-								Delete
+								<Trans>Delete</Trans>
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
@@ -152,19 +156,25 @@ export function HabitCard({ habit, now }: HabitCardProps) {
 			<AlertDialog open={confirmingDelete} onOpenChange={setConfirmingDelete}>
 				<AlertDialogContent size="sm">
 					<AlertDialogHeader>
-						<AlertDialogTitle>Delete this habit?</AlertDialogTitle>
+						<AlertDialogTitle>
+							<Trans>Delete this habit?</Trans>
+						</AlertDialogTitle>
 						<AlertDialogDescription>
-							All completion history for this habit will be permanently removed.
-							This can't be undone.
+							<Trans>
+								All completion history for this habit will be permanently
+								removed. This can't be undone.
+							</Trans>
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogCancel>
+							<Trans>Cancel</Trans>
+						</AlertDialogCancel>
 						<AlertDialogAction
 							variant="destructive"
 							onClick={handleConfirmDelete}
 						>
-							Delete
+							<Trans>Delete</Trans>
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

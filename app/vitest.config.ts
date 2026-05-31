@@ -1,3 +1,5 @@
+import { lingui, linguiTransformerBabelPreset } from "@lingui/vite-plugin";
+import babel from "@rolldown/plugin-babel";
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
 
@@ -17,6 +19,11 @@ import { defineConfig } from "vitest/config";
  * `process.env` via `test.env` (empty prefix = load all keys), so the Prisma
  * singleton can read `DATABASE_URL` at import time. Pure domain/component tests
  * don't touch it and are unaffected.
+ *
+ * Lingui macros (`<Trans>`, `useLingui()`, `plural`) are transformed at build
+ * time by the Babel plugin. Vitest needs the same transformation so component
+ * tests that import macro-using components can compile. We add the Lingui vite
+ * plugin and its Babel transformer to the vitest plugin chain here.
  */
 export default defineConfig(({ mode }) => ({
 	resolve: {
@@ -25,6 +32,13 @@ export default defineConfig(({ mode }) => ({
 			"@": new URL("./src/", import.meta.url).pathname,
 		},
 	},
+	plugins: [
+		// Transform Lingui macros (@lingui/react/macro, @lingui/core/macro) in
+		// test files and the components they import. Without this, macro entry
+		// points try to load babel-plugin-macros at runtime and fail.
+		lingui(),
+		babel({ presets: [linguiTransformerBabelPreset()] }),
+	],
 	test: {
 		environment: "node",
 		include: ["src/**/*.test.ts", "src/**/*.test.tsx"],

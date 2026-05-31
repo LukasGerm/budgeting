@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Money } from "./money";
 
-// Intl.NumberFormat emits a non-breaking space (U+00A0) between the amount
-// and the currency symbol. We spell it out explicitly here so the test
-// assertions don't depend on invisible whitespace in the source file.
-const NBSP = " ";
-
 describe("Money", () => {
 	it("constructs from integer cents", () => {
 		expect(Money.fromCents(1234).toCents()).toBe(1234);
@@ -16,20 +11,6 @@ describe("Money", () => {
 		expect(() => Money.fromCents(1.5)).toThrow();
 		expect(() => Money.fromCents(Number.NaN)).toThrow();
 		expect(() => Money.fromCents(Number.POSITIVE_INFINITY)).toThrow();
-	});
-
-	it("parses euro strings with comma or dot", () => {
-		expect(Money.fromEuroString("12,50").toCents()).toBe(1250);
-		expect(Money.fromEuroString("12.50").toCents()).toBe(1250);
-		expect(Money.fromEuroString("0,01").toCents()).toBe(1);
-		expect(Money.fromEuroString("300").toCents()).toBe(30000);
-		expect(Money.fromEuroString("-5.25").toCents()).toBe(-525);
-	});
-
-	it("rejects malformed euro strings", () => {
-		expect(() => Money.fromEuroString("abc")).toThrow();
-		expect(() => Money.fromEuroString("12,345")).toThrow();
-		expect(() => Money.fromEuroString("")).toThrow();
 	});
 
 	it("parses keypad decimal strings into cents", () => {
@@ -69,7 +50,6 @@ describe("Money", () => {
 			sum = sum.add(Money.fromCents(1)); // 0,01 € a thousand times
 		}
 		expect(sum.toCents()).toBe(1000);
-		expect(sum.format()).toBe(`10,00${NBSP}€`);
 	});
 
 	it("survives a long sequence of mixed adds and subtracts", () => {
@@ -101,9 +81,12 @@ describe("Money", () => {
 		expect(Money.fromCents(50).equals(Money.fromCents(51))).toBe(false);
 	});
 
-	it("formats as German EUR with two decimals", () => {
-		expect(Money.fromCents(30000).format()).toBe(`300,00${NBSP}€`);
-		expect(Money.fromCents(174_19).format()).toBe(`174,19${NBSP}€`);
-		expect(Money.fromCents(-4700).format()).toBe(`-47,00${NBSP}€`);
+	it("renders unsigned decimal string for keypad prefill", () => {
+		expect(Money.fromCents(30000).toDecimalString()).toBe("300");
+		expect(Money.fromCents(1250).toDecimalString()).toBe("12.50");
+		expect(Money.fromCents(1419).toDecimalString()).toBe("14.19");
+		// Zero → empty string ("nothing entered yet")
+		expect(Money.fromCents(0).toDecimalString()).toBe("");
+		expect(Money.zero().toDecimalString()).toBe("");
 	});
 });

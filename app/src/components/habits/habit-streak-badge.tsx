@@ -7,6 +7,7 @@
  *     reset streak (unlike the ambient home chip which hides 0).
  */
 
+import { useLingui } from "@lingui/react/macro";
 import { Flame } from "lucide-react";
 
 interface HabitStreakBadgeProps {
@@ -15,10 +16,17 @@ interface HabitStreakBadgeProps {
 }
 
 export function HabitStreakBadge({ streak }: HabitStreakBadgeProps) {
+	const { t } = useLingui();
+	// Plural in an imperative aria-label: use ternary with separate `t` tagged
+	// literals for singular and plural forms so the Babel macro can extract both.
+	const label =
+		streak === 1
+			? t`Current streak: ${streak} day`
+			: t`Current streak: ${streak} days`;
 	return (
 		<output
 			className="inline-flex items-center gap-1 text-muted-foreground text-sm"
-			aria-label={`Current streak: ${streak} ${streak === 1 ? "day" : "days"}`}
+			aria-label={label}
 		>
 			<Flame className="size-3.5 shrink-0" aria-hidden="true" />
 			<span className="tabular-nums">{streak}</span>

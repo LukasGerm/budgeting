@@ -1,4 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
 	createRootRouteWithContext,
 	HeadContent,
@@ -6,6 +7,11 @@ import {
 } from "@tanstack/react-router";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { Toaster } from "#/components/ui/sonner";
+import type { SupportedCurrency, SupportedLocale } from "#/i18n/config";
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from "#/i18n/config";
+import { getResolvedPrefs } from "#/i18n/locale-server";
+import { I18nSetupProvider } from "#/i18n/provider";
+import { useTRPC } from "#/integrations/trpc/react";
 import type { TRPCRouter } from "#/integrations/trpc/router";
 // Side-effect import (not `?url`): lets TanStack Start inject the stylesheet
 // <link> from the *client* manifest. The `?url` form bakes in the SSR build's
@@ -52,18 +58,58 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			{ rel: "icon", href: "/favicon.ico" },
 		],
 	}),
+	// Resolve locale + currency on every request from cookie / Accept-Language /
+	// DB preference (for authed users). Returning it from the loader makes it
+	// available to the shell component so both the SSR render and client hydration
+	// read the same value — no mismatch.
+	loader: async () => {
+		const prefs = await getResolvedPrefs();
+		return { prefs };
+	},
 	shellComponent: RootDocument,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+	const { prefs } = Route.useLoaderData() ?? {
+		prefs: { locale: DEFAULT_LOCALE, currency: DEFAULT_CURRENCY },
+	};
+
+	const trpc = useTRPC();
+
+	// Background mutation: writes DB columns + sets SSR cookies. The UI
+	// switches instantly (via provider state); this runs fire-and-forget.
+	// Errors are silently swallowed — the UI already updated optimistically,
+	// and a failed persist is recoverable on the next page load from the DB.
+	const persistPrefs = useMutation(trpc.user.setPreferences.mutationOptions());
+
+	function handleSetPreferences(next: {
+		locale?: SupportedLocale;
+		currency?: SupportedCurrency;
+	}) {
+		// Map the UI's `locale` key to the mutation's `language` key. The DB column
+		// and tRPC input schema speak `language`; the LocaleContext speaks `locale`.
+		// All keys are optional in the mutation input, so only include defined ones.
+		const input: { language?: SupportedLocale; currency?: SupportedCurrency } =
+			{};
+		if (next.locale !== undefined) input.language = next.locale;
+		if (next.currency !== undefined) input.currency = next.currency;
+		persistPrefs.mutate(input);
+	}
+
 	return (
-		<html lang="en" className="dark">
+		<html lang={prefs.locale} className="dark">
 			<head>
 				<HeadContent />
 			</head>
 			<body>
-				{children}
-				<Toaster />
+				<I18nSetupProvider
+					locale={prefs.locale}
+					currency={prefs.currency}
+					onSetPreferences={handleSetPreferences}
+				>
+					{children}
+					<Toaster />
+				</I18nSetupProvider>
 				<Scripts />
 			</body>
 		</html>

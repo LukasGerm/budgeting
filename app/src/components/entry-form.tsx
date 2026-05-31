@@ -20,6 +20,7 @@
  * consistent place to correct or remove an entry.
  */
 
+import { Trans, useLingui } from "@lingui/react/macro";
 import { type Dispatch, useState } from "react";
 import { type KeypadKey, NumericKeypad } from "#/components/numeric-keypad";
 import {
@@ -36,6 +37,7 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
 import { type AdjustmentDirection, type EntryKind, Money } from "#/domain";
+import { useFormat } from "#/i18n/use-format";
 
 /**
  * Apply a single keypad key to the current amount string, returning the next
@@ -129,8 +131,13 @@ export function entryFormReducer(
 }
 
 /** The big, sign-aware amount preview at the top of the sheet. */
-function previewText(state: EntryFormState): string {
-	const magnitude = Money.fromDecimalString(state.amount).format();
+function previewText(
+	state: EntryFormState,
+	formatMoney: (cents: number) => string,
+): string {
+	const magnitude = formatMoney(
+		Money.fromDecimalString(state.amount).toCents(),
+	);
 	if (state.kind !== "adjustment") return magnitude;
 	return `${state.direction === "topup" ? "+" : "−"}${magnitude}`;
 }
@@ -160,6 +167,8 @@ export function EntryForm({
 	/** Show the Spend / Adjust switch (add mode only; kind is fixed on edit). */
 	showKindToggle?: boolean;
 }) {
+	const { formatMoney } = useFormat();
+	const { t } = useLingui();
 	const canSubmit = amountCents > 0 && !pending;
 	const isAdjustment = state.kind === "adjustment";
 
@@ -176,16 +185,16 @@ export function EntryForm({
 					className="w-full"
 				>
 					<ToggleGroupItem value="spend" className="flex-1">
-						Spend
+						<Trans>Spend</Trans>
 					</ToggleGroupItem>
 					<ToggleGroupItem value="adjustment" className="flex-1">
-						Adjust
+						<Trans>Adjust</Trans>
 					</ToggleGroupItem>
 				</ToggleGroup>
 			) : null}
 
 			<p className="text-center font-semibold text-5xl tabular-nums tracking-tight">
-				{previewText(state)}
+				{previewText(state, formatMoney)}
 			</p>
 
 			{isAdjustment ? (
@@ -203,10 +212,10 @@ export function EntryForm({
 					className="w-full"
 				>
 					<ToggleGroupItem value="topup" className="flex-1">
-						+ Top-up
+						<Trans>+ Top-up</Trans>
 					</ToggleGroupItem>
 					<ToggleGroupItem value="setaside" className="flex-1">
-						− Set aside
+						<Trans>− Set aside</Trans>
 					</ToggleGroupItem>
 				</ToggleGroup>
 			) : null}
@@ -216,7 +225,7 @@ export function EntryForm({
 					autoFocus
 					value={state.note}
 					onChange={(e) => dispatch({ type: "note", value: e.target.value })}
-					placeholder="Note (optional)"
+					placeholder={t`Note (optional)`}
 					maxLength={280}
 				/>
 			) : (
@@ -226,7 +235,11 @@ export function EntryForm({
 					className="text-muted-foreground"
 					onClick={() => dispatch({ type: "expandNote" })}
 				>
-					{state.note.trim().length > 0 ? state.note : "Add a note"}
+					{state.note.trim().length > 0 ? (
+						state.note
+					) : (
+						<Trans>Add a note</Trans>
+					)}
 				</Button>
 			)}
 
@@ -266,17 +279,24 @@ function DeleteAction({
 				className="text-destructive hover:text-destructive"
 				onClick={() => setOpen(true)}
 			>
-				Delete
+				<Trans>Delete</Trans>
 			</Button>
 			<AlertDialogContent>
 				<AlertDialogHeader>
-					<AlertDialogTitle>Delete this entry?</AlertDialogTitle>
+					<AlertDialogTitle>
+						<Trans>Delete this entry?</Trans>
+					</AlertDialogTitle>
 					<AlertDialogDescription>
-						This can't be undone and your daily and monthly numbers will update.
+						<Trans>
+							This can't be undone and your daily and monthly numbers will
+							update.
+						</Trans>
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
+					<AlertDialogCancel>
+						<Trans>Cancel</Trans>
+					</AlertDialogCancel>
 					<AlertDialogAction
 						disabled={disabled}
 						onClick={() => {
@@ -284,7 +304,7 @@ function DeleteAction({
 							setOpen(false);
 						}}
 					>
-						Delete
+						<Trans>Delete</Trans>
 					</AlertDialogAction>
 				</AlertDialogFooter>
 			</AlertDialogContent>

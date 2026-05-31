@@ -1,0 +1,649 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-05-31 17:50+0200\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. placeholder {0}: rel.days
+#: src/components/expense-row.tsx:79
+msgid "{0, plural, one {# day ago} other {# days ago}}"
+msgstr "{0, plural, one {# day ago} other {# days ago}}"
+
+#. placeholder {0}: summary.daysLeft
+#: src/components/dashboard/headline-stats.tsx:57
+msgid "{0, plural, one {# day} other {# days}}"
+msgstr "{0, plural, one {# day} other {# days}}"
+
+#: src/routes/_authed/index.tsx:136
+msgid "{money} over budget"
+msgstr "{money} over budget"
+
+#: src/components/dashboard/vs-last-delta.tsx:74
+msgid "{pctSpan} less than last cycle so far"
+msgstr "{pctSpan} less than last cycle so far"
+
+#: src/components/dashboard/vs-last-delta.tsx:70
+msgid "{pctSpan} more than last cycle so far"
+msgstr "{pctSpan} more than last cycle so far"
+
+#: src/routes/_authed/index.tsx:144
+msgid "{remaining} left of {budget} · day {elapsedDays} of {totalDays}"
+msgstr "{remaining} left of {budget} · day {elapsedDays} of {totalDays}"
+
+#: src/components/entry-form.tsx:215
+msgid "+ Top-up"
+msgstr "+ Top-up"
+
+#: src/components/entry-form.tsx:218
+msgid "− Set aside"
+msgstr "− Set aside"
+
+#: src/i18n/use-error-message.ts:42
+msgid "A spend amount must be positive."
+msgstr "A spend amount must be positive."
+
+#: src/components/dashboard/vs-last-delta.tsx:59
+msgid "About the same as last cycle so far"
+msgstr "About the same as last cycle so far"
+
+#: src/components/spend-sheet.tsx:140
+msgid "Add"
+msgstr "Add"
+
+#: src/components/habits/habit-sheet.tsx:236
+msgid "Add a habit"
+msgstr "Add a habit"
+
+#: src/components/entry-form.tsx:241
+msgid "Add a note"
+msgstr "Add a note"
+
+#: src/components/spend-sheet.tsx:79
+msgid "Added {magnitudeLabel}"
+msgstr "Added {magnitudeLabel}"
+
+#: src/components/entry-form.tsx:191
+msgid "Adjust"
+msgstr "Adjust"
+
+#: src/components/habits/habit-card.tsx:163
+msgid "All completion history for this habit will be permanently removed. This can't be undone."
+msgstr "All completion history for this habit will be permanently removed. This can't be undone."
+
+#: src/routes/signup.tsx:113
+msgid "Already have an account? <0>Log in</0>"
+msgstr "Already have an account? <0>Log in</0>"
+
+#: src/i18n/use-error-message.ts:46
+msgid "Amount must be non-zero."
+msgstr "Amount must be non-zero."
+
+#: src/i18n/use-error-message.ts:68
+msgid "An account with this email already exists."
+msgstr "An account with this email already exists."
+
+#: src/i18n/use-error-message.ts:44
+msgid "An adjustment amount must be non-zero."
+msgstr "An adjustment amount must be non-zero."
+
+#: src/i18n/use-error-message.ts:52
+msgid "Anchor day must be between 1 and 31."
+msgstr "Anchor day must be between 1 and 31."
+
+#: src/routes/_authed/history.tsx:117
+msgid "Anything you log will show up here."
+msgstr "Anything you log will show up here."
+
+#: src/routes/_authed/index.tsx:117
+msgid "Available today"
+msgstr "Available today"
+
+#: src/components/dashboard/headline-stats.tsx:51
+msgid "Average / day"
+msgstr "Average / day"
+
+#: src/components/numeric-keypad.tsx:72
+msgid "Backspace"
+msgstr "Backspace"
+
+#: src/components/dashboard/biggest-spends.tsx:39
+msgid "Biggest spends"
+msgstr "Biggest spends"
+
+#: src/routes/_authed/settings.tsx:301
+msgid "Budget"
+msgstr "Budget"
+
+#: src/i18n/use-error-message.ts:50
+msgid "Budget must be greater than zero."
+msgstr "Budget must be greater than zero."
+
+#: src/routes/_authed/settings.tsx:273
+msgid "Budget updated."
+msgstr "Budget updated."
+
+#: src/routes/_authed/habits.tsx:73
+msgid "Build streaks by adding habits you want to do every day."
+msgstr "Build streaks by adding habits you want to do every day."
+
+#: src/components/entry-form.tsx:298
+#: src/components/habits/habit-card.tsx:171
+msgid "Cancel"
+msgstr "Cancel"
+
+#: src/components/expense-row.tsx:203
+msgid "Change the amount or note and tap Save. The day can't be changed."
+msgstr "Change the amount or note and tap Save. The day can't be changed."
+
+#: src/routes/_authed/settings.tsx:291
+msgid "Change your monthly budget and cycle start. Changes apply to the current cycle immediately."
+msgstr "Change your monthly budget and cycle start. Changes apply to the current cycle immediately."
+
+#: src/routes/_authed/settings.tsx:192
+msgid "Changes apply instantly. Your preference is saved to your account."
+msgstr "Changes apply instantly. Your preference is saved to your account."
+
+#: src/routes/_authed/settings.tsx:236
+msgid "CHF — Swiss Franc"
+msgstr "CHF — Swiss Franc"
+
+#: src/components/spend-sheet.tsx:128
+msgid "Choose Spend or Adjust, enter an amount and an optional note, then confirm."
+msgstr "Choose Spend or Adjust, enter an amount and an optional note, then confirm."
+
+#: src/components/habits/habit-heatmap.tsx:144
+msgid "Completion history"
+msgstr "Completion history"
+
+#: src/routes/signup.tsx:66
+msgid "Create an account to start tracking your budget."
+msgstr "Create an account to start tracking your budget."
+
+#: src/components/habits/habit-sheet.tsx:150
+msgid "Create habit"
+msgstr "Create habit"
+
+#: src/routes/_authed/habits.tsx:81
+msgid "Create your first habit"
+msgstr "Create your first habit"
+
+#: src/routes/signup.tsx:106
+msgid "Creating account…"
+msgstr "Creating account…"
+
+#: src/components/habits/habit-sheet.tsx:151
+msgid "Creating…"
+msgstr "Creating…"
+
+#: src/routes/_authed/settings.tsx:219
+msgid "Currency"
+msgstr "Currency"
+
+#: src/components/habits/habit-streak-badge.tsx:24
+msgid "Current streak: {streak} day"
+msgstr "Current streak: {streak} day"
+
+#: src/components/habits/habit-streak-badge.tsx:25
+msgid "Current streak: {streak} days"
+msgstr "Current streak: {streak} days"
+
+#: src/routes/_authed/onboarding.tsx:104
+#: src/routes/_authed/settings.tsx:141
+msgid "Cycle starts on day"
+msgstr "Cycle starts on day"
+
+#: src/components/dashboard/daily-spend-chart.tsx:75
+msgid "Daily spend"
+msgstr "Daily spend"
+
+#: src/components/bottom-nav.tsx:51
+#: src/components/bottom-nav.tsx:52
+#: src/routes/_authed/dashboard.tsx:77
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: src/components/dashboard/daily-spend-chart.tsx:118
+#: src/components/dashboard/pace-line-chart.tsx:145
+msgid "Day {label}"
+msgstr "Day {label}"
+
+#: src/components/dashboard/daily-spend-chart.tsx:111
+#: src/components/dashboard/pace-line-chart.tsx:133
+msgid "Day {v}"
+msgstr "Day {v}"
+
+#: src/components/dashboard/headline-stats.tsx:55
+msgid "Days left"
+msgstr "Days left"
+
+#: src/components/numeric-keypad.tsx:55
+msgid "Decimal separator"
+msgstr "Decimal separator"
+
+#: src/components/entry-form.tsx:282
+#: src/components/entry-form.tsx:307
+#: src/components/habits/habit-card.tsx:125
+#: src/components/habits/habit-card.tsx:177
+msgid "Delete"
+msgstr "Delete"
+
+#: src/components/entry-form.tsx:287
+msgid "Delete this entry?"
+msgstr "Delete this entry?"
+
+#: src/components/habits/habit-card.tsx:160
+msgid "Delete this habit?"
+msgstr "Delete this habit?"
+
+#: src/components/habits/habit-heatmap.tsx:140
+msgid "done"
+msgstr "done"
+
+#: src/routes/_authed/onboarding.tsx:96
+#: src/routes/_authed/settings.tsx:133
+msgid "e.g. 300"
+msgstr "e.g. 300"
+
+#: src/components/habits/habit-sheet.tsx:170
+msgid "e.g. Read for 20 minutes"
+msgstr "e.g. Read for 20 minutes"
+
+#: src/components/habits/habit-card.tsx:119
+msgid "Edit"
+msgstr "Edit"
+
+#: src/components/expense-row.tsx:200
+msgid "Edit entry"
+msgstr "Edit entry"
+
+#: src/components/habits/habit-sheet.tsx:149
+msgid "Edit habit"
+msgstr "Edit habit"
+
+#: src/routes/_authed/settings.tsx:304
+msgid "Edits apply retroactively across the current cycle."
+msgstr "Edits apply retroactively across the current cycle."
+
+#: src/routes/login.tsx:65
+#: src/routes/signup.tsx:72
+msgid "Email"
+msgstr "Email"
+
+#: src/components/habits/habit-sheet.tsx:159
+msgid "Enter a name and pick an icon for your habit."
+msgstr "Enter a name and pick an icon for your habit."
+
+#: src/i18n/use-error-message.ts:54
+msgid "Enter a valid amount (e.g. 300 or 1234.50)."
+msgstr "Enter a valid amount (e.g. 300 or 1234.50)."
+
+#: src/routes/_authed/settings.tsx:233
+msgid "EUR — Euro"
+msgstr "EUR — Euro"
+
+#: src/routes/_authed/settings.tsx:235
+msgid "GBP — British Pound"
+msgstr "GBP — British Pound"
+
+#: src/components/habits/habit-sheet.tsx:140
+msgid "Habit created"
+msgstr "Habit created"
+
+#: src/components/habits/habit-card.tsx:81
+msgid "Habit deleted"
+msgstr "Habit deleted"
+
+#: src/i18n/use-error-message.ts:58
+msgid "Habit name can't be empty."
+msgstr "Habit name can't be empty."
+
+#: src/i18n/use-error-message.ts:60
+msgid "Habit name must be 60 characters or fewer."
+msgstr "Habit name must be 60 characters or fewer."
+
+#: src/components/habits/habit-card.tsx:112
+msgid "Habit options"
+msgstr "Habit options"
+
+#: src/components/habits/habit-sheet.tsx:124
+msgid "Habit updated"
+msgstr "Habit updated"
+
+#: src/components/bottom-nav.tsx:65
+#: src/components/bottom-nav.tsx:66
+#: src/routes/_authed/habits.tsx:56
+#: src/routes/_authed/habits.tsx:94
+msgid "Habits"
+msgstr "Habits"
+
+#: src/routes/_authed/index.tsx:109
+msgid "Hi, {email}"
+msgstr "Hi, {email}"
+
+#: src/components/bottom-nav.tsx:58
+#: src/components/bottom-nav.tsx:59
+#: src/routes/_authed/history.tsx:62
+msgid "History"
+msgstr "History"
+
+#: src/components/bottom-nav.tsx:44
+#: src/components/bottom-nav.tsx:45
+msgid "Home"
+msgstr "Home"
+
+#: src/components/habits/habit-sheet.tsx:181
+msgid "Icon"
+msgstr "Icon"
+
+#: src/components/dashboard/pace-line-chart.tsx:93
+msgid "Ideal pace"
+msgstr "Ideal pace"
+
+#: src/routes/_authed/onboarding.tsx:118
+#: src/routes/_authed/settings.tsx:155
+msgid "If a month doesn't have your day (e.g. 31 in February), the cycle starts on the last day of that month instead."
+msgstr "If a month doesn't have your day (e.g. 31 in February), the cycle starts on the last day of that month instead."
+
+#: src/i18n/use-error-message.ts:66
+msgid "Invalid email or password."
+msgstr "Invalid email or password."
+
+#: src/routes/_authed/settings.tsx:200
+msgid "Language"
+msgstr "Language"
+
+#: src/routes/_authed/settings.tsx:189
+msgid "Language & currency"
+msgstr "Language & currency"
+
+#: src/routes/_authed/dashboard.tsx:67
+#: src/routes/_authed/index.tsx:78
+#: src/routes/_authed/settings.tsx:319
+msgid "Loading…"
+msgstr "Loading…"
+
+#: src/components/spend-sheet.tsx:140
+msgid "Log"
+msgstr "Log"
+
+#: src/components/spend-sheet.tsx:116
+msgid "Log a spend"
+msgstr "Log a spend"
+
+#: src/components/spend-sheet.tsx:125
+msgid "Log a spend or adjust"
+msgstr "Log a spend or adjust"
+
+#: src/routes/login.tsx:56
+#: src/routes/login.tsx:97
+msgid "Log in"
+msgstr "Log in"
+
+#: src/routes/_authed/settings.tsx:328
+msgid "Log out"
+msgstr "Log out"
+
+#: src/components/spend-sheet.tsx:77
+msgid "Logged {magnitudeLabel}"
+msgstr "Logged {magnitudeLabel}"
+
+#: src/routes/login.tsx:97
+msgid "Logging in…"
+msgstr "Logging in…"
+
+#: src/routes/_authed/settings.tsx:328
+msgid "Logging out…"
+msgstr "Logging out…"
+
+#: src/components/habits/today-checklist.tsx:66
+msgid "Mark {name} done today"
+msgstr "Mark {name} done today"
+
+#: src/routes/_authed/onboarding.tsx:89
+#: src/routes/_authed/settings.tsx:126
+msgid "Monthly budget"
+msgstr "Monthly budget"
+
+#: src/components/dashboard/monthly-trend-chart.tsx:124
+msgid "Monthly totals"
+msgstr "Monthly totals"
+
+#: src/components/dashboard/vs-last-delta.tsx:64
+msgid "More than last cycle so far"
+msgstr "More than last cycle so far"
+
+#: src/components/habits/habit-sheet.tsx:166
+msgid "Name"
+msgstr "Name"
+
+#: src/components/dashboard/pace-line-chart.tsx:104
+msgid "Net spending vs. the steady daily pace"
+msgstr "Net spending vs. the steady daily pace"
+
+#: src/components/dashboard/monthly-trend-chart.tsx:127
+msgid "Net total per cycle vs. your monthly budget (the dashed line)."
+msgstr "Net total per cycle vs. your monthly budget (the dashed line)."
+
+#: src/components/habits/habit-sheet.tsx:149
+msgid "New habit"
+msgstr "New habit"
+
+#: src/routes/login.tsx:101
+msgid "No account yet? <0>Sign up</0>"
+msgstr "No account yet? <0>Sign up</0>"
+
+#: src/routes/_authed/history.tsx:114
+msgid "No expenses yet this cycle"
+msgstr "No expenses yet this cycle"
+
+#: src/routes/_authed/habits.tsx:70
+msgid "No habits yet"
+msgstr "No habits yet"
+
+#: src/components/dashboard/biggest-spends.tsx:50
+msgid "No note"
+msgstr "No note"
+
+#: src/components/dashboard/daily-spend-chart.tsx:91
+msgid "No spending yet this cycle."
+msgstr "No spending yet this cycle."
+
+#: src/components/habits/habit-heatmap.tsx:141
+msgid "not done"
+msgstr "not done"
+
+#: src/components/dashboard/pace-line-chart.tsx:119
+msgid "Not enough data yet — come back tomorrow."
+msgstr "Not enough data yet — come back tomorrow."
+
+#: src/components/entry-form.tsx:228
+msgid "Note (optional)"
+msgstr "Note (optional)"
+
+#: src/i18n/use-error-message.ts:62
+msgid "Note must be 280 characters or fewer."
+msgstr "Note must be 280 characters or fewer."
+
+#: src/components/dashboard/projection-caption.tsx:46
+msgid "On pace to finish {amount} over budget."
+msgstr "On pace to finish {amount} over budget."
+
+#: src/components/dashboard/projection-caption.tsx:48
+msgid "On pace to finish {amount} under budget."
+msgstr "On pace to finish {amount} under budget."
+
+#: src/components/dashboard/daily-spend-chart.tsx:68
+msgid "Over allowance"
+msgstr "Over allowance"
+
+#: src/components/dashboard/pace-line-chart.tsx:94
+msgid "Over pace"
+msgstr "Over pace"
+
+#: src/components/dashboard/pace-line-chart.tsx:101
+msgid "Pace this cycle"
+msgstr "Pace this cycle"
+
+#: src/routes/login.tsx:79
+#: src/routes/signup.tsx:86
+msgid "Password"
+msgstr "Password"
+
+#: src/i18n/use-error-message.ts:70
+msgid "Password must be at least 8 characters."
+msgstr "Password must be at least 8 characters."
+
+#: src/components/bottom-nav.tsx:72
+msgid "Primary navigation"
+msgstr "Primary navigation"
+
+#: src/routes/_authed/index.tsx:160
+msgid "Recent"
+msgstr "Recent"
+
+#: src/components/expense-row.tsx:215
+#: src/routes/_authed/settings.tsx:167
+msgid "Save"
+msgstr "Save"
+
+#: src/routes/_authed/onboarding.tsx:133
+msgid "Save and continue"
+msgstr "Save and continue"
+
+#: src/components/habits/habit-sheet.tsx:150
+msgid "Save changes"
+msgstr "Save changes"
+
+#: src/components/expense-row.tsx:216
+#: src/components/habits/habit-sheet.tsx:151
+#: src/components/spend-sheet.tsx:141
+#: src/routes/_authed/onboarding.tsx:131
+#: src/routes/_authed/settings.tsx:167
+msgid "Saving…"
+msgstr "Saving…"
+
+#: src/routes/_authed/index.tsx:163
+msgid "See all"
+msgstr "See all"
+
+#: src/components/expense-row.tsx:102
+msgid "Set aside"
+msgstr "Set aside"
+
+#: src/components/spend-sheet.tsx:80
+msgid "Set aside {magnitudeLabel}"
+msgstr "Set aside {magnitudeLabel}"
+
+#: src/routes/_authed/onboarding.tsx:72
+msgid "Set up your budget"
+msgstr "Set up your budget"
+
+#: src/routes/_authed.tsx:110
+#: src/routes/_authed/settings.tsx:288
+msgid "Settings"
+msgstr "Settings"
+
+#: src/routes/signup.tsx:63
+#: src/routes/signup.tsx:108
+msgid "Sign up"
+msgstr "Sign up"
+
+#: src/i18n/use-error-message.ts:74
+msgid "Something went wrong. Check your connection and try again."
+msgstr "Something went wrong. Check your connection and try again."
+
+#: src/components/entry-form.tsx:188
+msgid "Spend"
+msgstr "Spend"
+
+#: src/components/dashboard/daily-spend-chart.tsx:78
+msgid "Spends only — adjustments aren't shown here, so this won't match the net pace line on adjustment days. Bars over the daily allowance are highlighted."
+msgstr "Spends only — adjustments aren't shown here, so this won't match the net pace line on adjustment days. Bars over the daily allowance are highlighted."
+
+#: src/components/dashboard/daily-spend-chart.tsx:67
+#: src/components/dashboard/daily-spend-chart.tsx:122
+msgid "Spent"
+msgstr "Spent"
+
+#: src/components/dashboard/pace-line-chart.tsx:92
+msgid "Spent (net)"
+msgstr "Spent (net)"
+
+#: src/components/dashboard/headline-stats.tsx:47
+msgid "Spent this cycle"
+msgstr "Spent this cycle"
+
+#: src/components/habits/habit-heatmap.tsx:143
+msgid "tap to mark done"
+msgstr "tap to mark done"
+
+#: src/components/habits/habit-heatmap.tsx:142
+msgid "tap to unmark"
+msgstr "tap to unmark"
+
+#: src/routes/_authed/onboarding.tsx:75
+msgid "Tell us your monthly amount and which day of the month your cycle starts."
+msgstr "Tell us your monthly amount and which day of the month your cycle starts."
+
+#: src/components/entry-form.tsx:290
+msgid "This can't be undone and your daily and monthly numbers will update."
+msgstr "This can't be undone and your daily and monthly numbers will update."
+
+#: src/routes/_authed/dashboard.tsx:80
+msgid "This cycle at a glance"
+msgstr "This cycle at a glance"
+
+#: src/routes/_authed/history.tsx:65
+msgid "This cycle's expenses"
+msgstr "This cycle's expenses"
+
+#: src/components/expense-row.tsx:75
+msgid "today"
+msgstr "today"
+
+#: src/components/habits/today-checklist.tsx:35
+msgid "Today"
+msgstr "Today"
+
+#: src/components/expense-row.tsx:100
+msgid "Top-up"
+msgstr "Top-up"
+
+#: src/components/dashboard/monthly-trend-chart.tsx:109
+#: src/components/dashboard/monthly-trend-chart.tsx:172
+msgid "Total (net)"
+msgstr "Total (net)"
+
+#: src/routes/_authed/habits.tsx:59
+#: src/routes/_authed/habits.tsx:97
+msgid "Track your daily routines."
+msgstr "Track your daily routines."
+
+#: src/components/spend-sheet.tsx:94
+msgid "Undo"
+msgstr "Undo"
+
+#: src/routes/_authed/settings.tsx:234
+msgid "USD — US Dollar"
+msgstr "USD — US Dollar"
+
+#: src/routes/login.tsx:59
+msgid "Welcome back. Enter your details to continue."
+msgstr "Welcome back. Enter your details to continue."
+
+#: src/components/expense-row.tsx:77
+msgid "yesterday"
+msgstr "yesterday"
+
+#: src/components/dashboard/monthly-trend-chart.tsx:138
+msgid "Your monthly trend will appear once you've completed a couple of cycles."
+msgstr "Your monthly trend will appear once you've completed a couple of cycles."

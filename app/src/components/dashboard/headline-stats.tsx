@@ -4,20 +4,23 @@
  *
  * Pure presentational: it takes a `CycleSpendSummary` and renders it, so it's
  * component-testable in isolation (props in, JSX out — no hooks, no data
- * fetching). Money renders via `Money.format()` (de-DE / EUR); days left is a
+ * fetching). Money renders via `useFormat().formatMoney`; days left is a
  * plain integer with a unit label.
  */
 
+import { Plural, Trans } from "@lingui/react/macro";
+import type { ReactNode } from "react";
 import { Card, CardContent } from "#/components/ui/card";
 import type { CycleSpendSummary } from "#/domain";
+import { useFormat } from "#/i18n/use-format";
 
 interface HeadlineStatsProps {
 	summary: CycleSpendSummary;
 }
 
 interface StatProps {
-	label: string;
-	value: string;
+	label: ReactNode;
+	value: ReactNode;
 }
 
 function Stat({ label, value }: StatProps) {
@@ -34,15 +37,25 @@ function Stat({ label, value }: StatProps) {
 }
 
 export function HeadlineStats({ summary }: HeadlineStatsProps) {
+	const { formatMoney } = useFormat();
+
 	return (
 		<Card>
 			<CardContent>
 				<dl className="grid grid-cols-2 gap-6">
-					<Stat label="Spent this cycle" value={summary.totalSpent.format()} />
-					<Stat label="Average / day" value={summary.avgPerDay.format()} />
 					<Stat
-						label="Days left"
-						value={`${summary.daysLeft} ${summary.daysLeft === 1 ? "day" : "days"}`}
+						label={<Trans>Spent this cycle</Trans>}
+						value={formatMoney(summary.totalSpent.toCents())}
+					/>
+					<Stat
+						label={<Trans>Average / day</Trans>}
+						value={formatMoney(summary.avgPerDay.toCents())}
+					/>
+					<Stat
+						label={<Trans>Days left</Trans>}
+						value={
+							<Plural value={summary.daysLeft} one="# day" other="# days" />
+						}
 					/>
 				</dl>
 			</CardContent>

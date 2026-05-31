@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { CycleComparison } from "#/domain";
 import { Money } from "#/domain";
+import { renderWithI18n } from "#/i18n/test-utils";
 import { VsLastDelta } from "./vs-last-delta";
 
 afterEach(() => {
@@ -39,8 +40,8 @@ const zeroBaselineResult: CycleComparison = {
 };
 
 describe("VsLastDelta", () => {
-	it("renders the percentage and direction for a 'less' comparison", () => {
-		render(<VsLastDelta comparison={lessResult} />);
+	it("renders the percentage and direction for a 'less' comparison — en", () => {
+		renderWithI18n("en", "EUR", <VsLastDelta comparison={lessResult} />);
 
 		const line = screen.getByText(/than last cycle so far/);
 		expect(line.textContent).toContain("40%");
@@ -50,8 +51,8 @@ describe("VsLastDelta", () => {
 		expect(line.className).not.toContain("text-destructive");
 	});
 
-	it("renders the 'more' comparison with destructive styling", () => {
-		render(<VsLastDelta comparison={moreResult} />);
+	it("renders the 'more' comparison with destructive styling — en", () => {
+		renderWithI18n("en", "EUR", <VsLastDelta comparison={moreResult} />);
 
 		const line = screen.getByText(/than last cycle so far/);
 		expect(line.textContent).toContain("50%");
@@ -60,16 +61,20 @@ describe("VsLastDelta", () => {
 		expect(line.className).toContain("text-destructive");
 	});
 
-	it("renders an 'about the same' line for an equal comparison", () => {
-		render(<VsLastDelta comparison={sameResult} />);
+	it("renders an 'about the same' line for an equal comparison — en", () => {
+		renderWithI18n("en", "EUR", <VsLastDelta comparison={sameResult} />);
 
 		const line = screen.getByText(/About the same as last cycle so far/);
 		expect(line.textContent).toContain("About the same as last cycle so far");
 		expect(line.className).not.toContain("text-destructive");
 	});
 
-	it("renders gracefully when pct is null (zero baseline)", () => {
-		render(<VsLastDelta comparison={zeroBaselineResult} />);
+	it("renders gracefully when pct is null (zero baseline) — en", () => {
+		renderWithI18n(
+			"en",
+			"EUR",
+			<VsLastDelta comparison={zeroBaselineResult} />,
+		);
 
 		const line = screen.getByText(/than last cycle so far/);
 		// No bare "null%" leaks into the copy.
@@ -80,12 +85,54 @@ describe("VsLastDelta", () => {
 	});
 
 	it("renders nothing when there is no previous cycle (null)", () => {
-		const { container } = render(<VsLastDelta comparison={null} />);
+		const { container } = renderWithI18n(
+			"en",
+			"EUR",
+			<VsLastDelta comparison={null} />,
+		);
 
 		// jest-dom isn't wired up here (see the other dashboard component tests),
 		// so assert emptiness with plain DOM/queries instead of toBeEmptyDOMElement.
 		expect(container.childElementCount).toBe(0);
 		expect(container.textContent).toBe("");
 		expect(screen.queryByText(/last cycle/)).toBeNull();
+	});
+
+	// German locale — guard against English words leaking into the DE UI (B1).
+
+	it("renders German 'weniger' for a 'less' comparison — de", () => {
+		renderWithI18n("de", "EUR", <VsLastDelta comparison={lessResult} />);
+
+		const line = screen.getByText(/letzten Monat bisher/);
+		expect(line.textContent).toContain("weniger");
+		expect(line.textContent).not.toContain("less");
+	});
+
+	it("renders German 'mehr' for a 'more' comparison — de", () => {
+		renderWithI18n("de", "EUR", <VsLastDelta comparison={moreResult} />);
+
+		const line = screen.getByText(/letzten Monat bisher/);
+		expect(line.textContent).toContain("mehr");
+		expect(line.textContent).not.toContain("more");
+	});
+
+	it("renders German 'Mehr' for a zero-baseline comparison — de", () => {
+		renderWithI18n(
+			"de",
+			"EUR",
+			<VsLastDelta comparison={zeroBaselineResult} />,
+		);
+
+		const line = screen.getByText(/letzten Monat bisher/);
+		expect(line.textContent).toContain("Mehr");
+		// No bare English "More" should appear.
+		expect(line.textContent).not.toMatch(/\bMore\b/);
+	});
+
+	it("renders German 'gleich' text for an equal comparison — de", () => {
+		renderWithI18n("de", "EUR", <VsLastDelta comparison={sameResult} />);
+
+		const line = screen.getByText(/gleich/);
+		expect(line.textContent).toContain("gleich");
 	});
 });

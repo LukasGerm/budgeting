@@ -1,28 +1,46 @@
 /**
- * Monthly-line copy for the home screen.
+ * Monthly-line structured data for the home screen.
  *
  * Pure and presentation-shaped: given the cycle's remaining balance, the total
- * budget, and the cycle position, it returns the single secondary line under
- * the daily number. The sign carries the message — no shaming copy, no icons
+ * budget, and the cycle position, it returns a discriminated union describing
+ * the status. The consuming component assembles the final string from this data
+ * (with money/dates locale-formatted via `useFormat`).
+ *
+ *   - non-negative remaining → { kind: "on_track", ... }
+ *   - negative remaining      → { kind: "over_budget", ... }
+ *
+ * The sign carries the message — no shaming copy, no icons
  * (PRODUCT.md: "punish me, don't yell at me").
  *
- *   - non-negative remaining → "X € left of Y € · day N of M"
- *   - negative remaining      → "-X € over budget" (the negative is the signal)
- *
- * Money already formats negatives with a leading minus ("-47,00 €"), so the
- * over-budget string reuses `format()` verbatim rather than re-deriving a sign.
+ * Issue 04 will wrap the sentence assembly in <Trans>/<plural> for translation.
  */
 
 import type { Money } from "./money";
 
-export function formatMonthlyStatus(
+export type MonthlyStatus =
+	| { kind: "over_budget"; remainingCents: number }
+	| {
+			kind: "on_track";
+			remainingCents: number;
+			budgetCents: number;
+			elapsedDays: number;
+			totalDays: number;
+	  };
+
+export function getMonthlyStatus(
 	monthlyRemaining: Money,
 	monthlyBudget: Money,
 	elapsedDays: number,
 	totalDays: number,
-): string {
+): MonthlyStatus {
 	if (monthlyRemaining.isNegative()) {
-		return `${monthlyRemaining.format()} over budget`;
+		return { kind: "over_budget", remainingCents: monthlyRemaining.toCents() };
 	}
-	return `${monthlyRemaining.format()} left of ${monthlyBudget.format()} · day ${elapsedDays} of ${totalDays}`;
+	return {
+		kind: "on_track",
+		remainingCents: monthlyRemaining.toCents(),
+		budgetCents: monthlyBudget.toCents(),
+		elapsedDays,
+		totalDays,
+	};
 }

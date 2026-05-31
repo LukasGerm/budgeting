@@ -1,3 +1,4 @@
+import { setCookie } from "@tanstack/react-start/server";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 import { HABIT_ICON_NAMES } from "#/components/habits/habit-icons";
@@ -10,6 +11,12 @@ import {
 	STREAK_WINDOW_DAYS,
 } from "#/domain";
 import { EntryKind } from "#/generated/prisma/enums";
+import {
+	CURRENCY_COOKIE,
+	LOCALE_COOKIE,
+	SUPPORTED_CURRENCIES,
+	SUPPORTED_LOCALES,
+} from "#/i18n/config";
 import { createTRPCRouter, protectedProcedure } from "./init";
 
 /** Wire `kind` ("spend"|"adjustment") → Prisma `EntryKind`. */
@@ -43,8 +50,12 @@ const budgetRouter = {
 	set: protectedProcedure
 		.input(
 			z.object({
-				monthlyAmountCents: z.number().int().nonnegative(),
-				anchorDay: z.number().int().min(1).max(31),
+				monthlyAmountCents: z.number().int().nonnegative("BUDGET_NOT_POSITIVE"),
+				anchorDay: z
+					.number()
+					.int()
+					.min(1, "ANCHOR_OUT_OF_RANGE")
+					.max(31, "ANCHOR_OUT_OF_RANGE"),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -90,7 +101,7 @@ const expenseRouter = {
 				.object({
 					kind: z.enum(["spend", "adjustment"]).default("spend"),
 					amountCents: z.number().int(),
-					note: z.string().trim().max(280).optional(),
+					note: z.string().trim().max(280, "NOTE_TOO_LONG").optional(),
 				})
 				.superRefine((val, ctx) => {
 					// A spend is money out: it must be strictly positive. An adjustment
@@ -100,14 +111,14 @@ const expenseRouter = {
 						ctx.addIssue({
 							code: z.ZodIssueCode.custom,
 							path: ["amountCents"],
-							message: "A spend amount must be positive.",
+							message: "SPEND_NOT_POSITIVE",
 						});
 					}
 					if (val.kind === "adjustment" && val.amountCents === 0) {
 						ctx.addIssue({
 							code: z.ZodIssueCode.custom,
 							path: ["amountCents"],
-							message: "An adjustment amount must be non-zero.",
+							message: "ADJUSTMENT_ZERO",
 						});
 					}
 				}),
@@ -238,8 +249,8 @@ const expenseRouter = {
 				amountCents: z
 					.number()
 					.int()
-					.refine((n) => n !== 0, "Amount must be non-zero."),
-				note: z.string().trim().max(280).optional(),
+					.refine((n) => n !== 0, "AMOUNT_ZERO"),
+				note: z.string().trim().max(280, "NOTE_TOO_LONG").optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -321,7 +332,11 @@ const habitRouter = {
 	create: protectedProcedure
 		.input(
 			z.object({
-				name: z.string().trim().min(1).max(60),
+				name: z
+					.string()
+					.trim()
+					.min(1, "HABIT_NAME_REQUIRED")
+					.max(60, "HABIT_NAME_TOO_LONG"),
 				icon: z.enum(HABIT_ICON_NAMES),
 			}),
 		)
@@ -363,7 +378,11 @@ const habitRouter = {
 		.input(
 			z.object({
 				id: z.string(),
-				name: z.string().trim().min(1).max(60),
+				name: z
+					.string()
+					.trim()
+					.min(1, "HABIT_NAME_REQUIRED")
+					.max(60, "HABIT_NAME_TOO_LONG"),
 				icon: z.enum(HABIT_ICON_NAMES),
 			}),
 		)
@@ -457,7 +476,62 @@ const habitRouter = {
 		}),
 } satisfies TRPCRouterRecord;
 
+/**
+ * User preference procedures — language + currency persistence (Module G).
+ *
+ * `setPreferences` writes the user's language and currency to the DB and also
+ * sets the SSR fast-path cookies so the next hard navigation picks them up
+ * without needing to hit the DB. The cookies are set via the TanStack Start
+ * server helper which is available because tRPC procedures run inside the
+ * request's AsyncLocalStorage scope.
+ *
+ * No cookie-cache is configured on the Better Auth session, so the DB write is
+ * immediately reflected in the next `getSession` call — no stale-cache risk.
+ */
+const userRouter = {
+	setPreferences: protectedProcedure
+		.input(
+			z.object({
+				language: z.enum(SUPPORTED_LOCALES).optional(),
+				currency: z.enum(SUPPORTED_CURRENCIES).optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { language, currency } = input;
+
+			// Only update whichever fields were supplied.
+			const data: { language?: string; currency?: string } = {};
+			if (language !== undefined) data.language = language;
+			if (currency !== undefined) data.currency = currency;
+
+			if (Object.keys(data).length === 0) return;
+
+			// (a) Write the DB columns — immediately visible on the next getSession
+			//     call because there is no Better Auth cookie-cache.
+			await prisma.user.update({
+				where: { id: ctx.userId },
+				data,
+			});
+
+			// (b) Set the SSR fast-path cookies so the next server-rendered page
+			//     uses the new values without a DB read (cookie is read in
+			//     getResolvedPrefs as the second-precedence source after userPref).
+			const cookieOptions = {
+				path: "/",
+				sameSite: "lax" as const,
+				maxAge: 60 * 60 * 24 * 365, // 1 year
+			};
+			if (language !== undefined) {
+				setCookie(LOCALE_COOKIE, language, cookieOptions);
+			}
+			if (currency !== undefined) {
+				setCookie(CURRENCY_COOKIE, currency, cookieOptions);
+			}
+		}),
+} satisfies TRPCRouterRecord;
+
 export const trpcRouter = createTRPCRouter({
+	user: userRouter,
 	budget: budgetRouter,
 	expense: expenseRouter,
 	habit: habitRouter,

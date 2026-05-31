@@ -12,6 +12,7 @@
  * and client hydration (see the note in `_authed/index.tsx`).
  */
 
+import { Trans } from "@lingui/react/macro";
 import { createFileRoute } from "@tanstack/react-router";
 import { BiggestSpends } from "#/components/dashboard/biggest-spends";
 import { DailySpendChart } from "#/components/dashboard/daily-spend-chart";
@@ -62,7 +63,9 @@ function DashboardPage() {
 	if (!dashboard) {
 		return (
 			<div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-8">
-				<p className="text-muted-foreground text-sm">Loading…</p>
+				<p className="text-muted-foreground text-sm">
+					<Trans>Loading…</Trans>
+				</p>
 			</div>
 		);
 	}
@@ -70,8 +73,12 @@ function DashboardPage() {
 	return (
 		<div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-8">
 			<header>
-				<h1 className="font-medium text-lg">Dashboard</h1>
-				<p className="text-muted-foreground text-sm">This cycle at a glance</p>
+				<h1 className="font-medium text-lg">
+					<Trans>Dashboard</Trans>
+				</h1>
+				<p className="text-muted-foreground text-sm">
+					<Trans>This cycle at a glance</Trans>
+				</p>
 			</header>
 
 			<HeadlineStats summary={dashboard.summary} />

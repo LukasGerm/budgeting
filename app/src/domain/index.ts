@@ -47,8 +47,12 @@ export {
 	pickHabitColor,
 } from "./habit";
 export { Money } from "./money";
-export { formatMonthlyStatus } from "./monthly-status";
-export { formatRelativeDate } from "./relative-date";
+export { getMonthlyStatus, type MonthlyStatus } from "./monthly-status";
+export {
+	calendarDaysAgo,
+	getRelativeDate,
+	type RelativeDate,
+} from "./relative-date";
 export {
 	computeStreaks,
 	STREAK_WINDOW_DAYS,

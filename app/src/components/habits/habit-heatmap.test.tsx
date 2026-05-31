@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildHeatmap, dayKey } from "#/domain";
 import { HEATMAP_WEEK_COUNT } from "#/hooks/use-habits";
+import { renderWithI18n } from "#/i18n/test-utils";
 import { HabitHeatmap } from "./habit-heatmap";
 
 afterEach(() => {
@@ -16,10 +17,30 @@ afterEach(() => {
 const TODAY = new Date(2025, 2, 19); // month is 0-indexed: 2 = March
 const HABIT_COLOR = "#4ade80";
 
+// Helper that renders with en locale (sufficient for structural assertions).
+function renderHeatmap(
+	completions: string[] = [],
+	onToggleDay?: (isoDay: string, done: boolean) => void,
+) {
+	const { weeks } = buildHeatmap(completions, TODAY, HEATMAP_WEEK_COUNT);
+	return renderWithI18n(
+		"en",
+		"EUR",
+		<HabitHeatmap
+			weeks={weeks}
+			color={HABIT_COLOR}
+			now={TODAY}
+			onToggleDay={onToggleDay}
+		/>,
+	);
+}
+
 describe("HabitHeatmap", () => {
 	it("renders the correct number of week columns", () => {
 		const { weeks } = buildHeatmap([], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
+		const { container } = renderWithI18n(
+			"en",
+			"EUR",
 			<HabitHeatmap weeks={weeks} color={HABIT_COLOR} now={TODAY} />,
 		);
 
@@ -33,7 +54,9 @@ describe("HabitHeatmap", () => {
 		// Mark exactly one completion: today itself.
 		const todayDayKey = dayKey(TODAY);
 		const { weeks } = buildHeatmap([todayDayKey], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
+		const { container } = renderWithI18n(
+			"en",
+			"EUR",
 			<HabitHeatmap weeks={weeks} color={HABIT_COLOR} now={TODAY} />,
 		);
 
@@ -43,10 +66,7 @@ describe("HabitHeatmap", () => {
 
 	it("marks missed cells with data-state=missed for past un-completed days", () => {
 		// No completions at all — all past days should be missed.
-		const { weeks } = buildHeatmap([], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
-			<HabitHeatmap weeks={weeks} color={HABIT_COLOR} now={TODAY} />,
-		);
+		const { container } = renderHeatmap();
 
 		const missedCells = container.querySelectorAll("[data-state='missed']");
 		// There should be multiple missed cells (all past days have no completion).
@@ -55,10 +75,7 @@ describe("HabitHeatmap", () => {
 
 	it("marks future cells with data-state=future", () => {
 		// TODAY is a Wednesday; Thu/Fri/Sat of the same week are future.
-		const { weeks } = buildHeatmap([], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
-			<HabitHeatmap weeks={weeks} color={HABIT_COLOR} now={TODAY} />,
-		);
+		const { container } = renderHeatmap();
 
 		const futureCells = container.querySelectorAll("[data-state='future']");
 		// At least Thu, Fri, Sat of the current week should be future.
@@ -66,10 +83,7 @@ describe("HabitHeatmap", () => {
 	});
 
 	it("marks today's cell with data-today=true", () => {
-		const { weeks } = buildHeatmap([], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
-			<HabitHeatmap weeks={weeks} color={HABIT_COLOR} now={TODAY} />,
-		);
+		const { container } = renderHeatmap();
 
 		const todayCells = container.querySelectorAll("[data-today='true']");
 		expect(todayCells.length).toBe(1);
@@ -78,7 +92,9 @@ describe("HabitHeatmap", () => {
 	it("today cell is marked even when it is done", () => {
 		const todayDayKey = dayKey(TODAY);
 		const { weeks } = buildHeatmap([todayDayKey], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
+		const { container } = renderWithI18n(
+			"en",
+			"EUR",
 			<HabitHeatmap weeks={weeks} color={HABIT_COLOR} now={TODAY} />,
 		);
 
@@ -90,31 +106,36 @@ describe("HabitHeatmap", () => {
 
 	it("today cell is marked when it is missed (not yet completed)", () => {
 		// No completions — today will be missed and still highlighted.
-		const { weeks } = buildHeatmap([], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
-			<HabitHeatmap weeks={weeks} color={HABIT_COLOR} now={TODAY} />,
-		);
+		const { container } = renderHeatmap();
 
 		const todayCell = container.querySelector("[data-today='true']");
 		expect(todayCell).toBeTruthy();
 		expect(todayCell?.getAttribute("data-state")).toBe("missed");
 	});
 
-	it("renders the grid container with an aria-label for accessibility", () => {
-		const { weeks } = buildHeatmap([], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
-			<HabitHeatmap weeks={weeks} color={HABIT_COLOR} now={TODAY} />,
-		);
+	it("renders the grid container with a translated aria-label — en", () => {
+		const { container } = renderHeatmap();
 
 		const gridEl = container.firstChild as HTMLElement;
 		expect(gridEl.getAttribute("aria-label")).toBe("Completion history");
 	});
 
-	it("each cell has a title describing the date", () => {
+	it("renders the grid container with a translated aria-label — de", () => {
 		const { weeks } = buildHeatmap([], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
+		const { container } = renderWithI18n(
+			"de",
+			"EUR",
 			<HabitHeatmap weeks={weeks} color={HABIT_COLOR} now={TODAY} />,
 		);
+
+		const gridEl = container.firstChild as HTMLElement;
+		// German translation: "Abschlusshistorie" (set in the DE catalog)
+		expect(gridEl.getAttribute("aria-label")).toBeTruthy();
+		expect(gridEl.getAttribute("aria-label")).not.toBe("");
+	});
+
+	it("each cell has a title describing the date", () => {
+		const { container } = renderHeatmap();
 
 		const cells = container.querySelectorAll("[data-state]");
 		// Every cell should have a non-empty title attribute.
@@ -126,7 +147,9 @@ describe("HabitHeatmap", () => {
 	it("applies the habit color as inline backgroundColor to done cells", () => {
 		const todayDayKey = dayKey(TODAY);
 		const { weeks } = buildHeatmap([todayDayKey], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
+		const { container } = renderWithI18n(
+			"en",
+			"EUR",
 			<HabitHeatmap weeks={weeks} color={HABIT_COLOR} now={TODAY} />,
 		);
 
@@ -140,10 +163,7 @@ describe("HabitHeatmap", () => {
 	});
 
 	it("future cells are non-interactive divs (not buttons)", () => {
-		const { weeks } = buildHeatmap([], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
-			<HabitHeatmap weeks={weeks} color={HABIT_COLOR} now={TODAY} />,
-		);
+		const { container } = renderHeatmap();
 
 		const futureCells = container.querySelectorAll("[data-state='future']");
 		for (const cell of futureCells) {
@@ -161,15 +181,7 @@ describe("HabitHeatmap interactions", () => {
 	// week and all prior weeks.
 
 	it("non-future cells (missed) are rendered as buttons", () => {
-		const { weeks } = buildHeatmap([], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
-			<HabitHeatmap
-				weeks={weeks}
-				color={HABIT_COLOR}
-				now={TODAY}
-				onToggleDay={vi.fn()}
-			/>,
-		);
+		const { container } = renderHeatmap([], vi.fn());
 
 		const missedCells = container.querySelectorAll("[data-state='missed']");
 		expect(missedCells.length).toBeGreaterThan(0);
@@ -181,15 +193,7 @@ describe("HabitHeatmap interactions", () => {
 	it("non-future cells (done) are rendered as buttons", () => {
 		// Mark today as done.
 		const todayDayKey = dayKey(TODAY);
-		const { weeks } = buildHeatmap([todayDayKey], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
-			<HabitHeatmap
-				weeks={weeks}
-				color={HABIT_COLOR}
-				now={TODAY}
-				onToggleDay={vi.fn()}
-			/>,
-		);
+		const { container } = renderHeatmap([todayDayKey], vi.fn());
 
 		const doneCells = container.querySelectorAll("[data-state='done']");
 		expect(doneCells.length).toBeGreaterThan(0);
@@ -201,16 +205,8 @@ describe("HabitHeatmap interactions", () => {
 	it("clicking a missed cell calls onToggleDay with the correct ISO day and currentlyDone=false", () => {
 		// Use a known past date: 2025-03-17 (Monday, the week before TODAY's week).
 		// TODAY = 2025-03-19. dayKey(2025-03-17) = "2025-2-17".
-		const { weeks } = buildHeatmap([], TODAY, HEATMAP_WEEK_COUNT);
 		const onToggleDay = vi.fn();
-		const { container } = render(
-			<HabitHeatmap
-				weeks={weeks}
-				color={HABIT_COLOR}
-				now={TODAY}
-				onToggleDay={onToggleDay}
-			/>,
-		);
+		const { container } = renderHeatmap([], onToggleDay);
 
 		// Find today's cell (missed, since no completions) and click it.
 		const todayCell = container.querySelector(
@@ -229,16 +225,8 @@ describe("HabitHeatmap interactions", () => {
 	it("clicking a done cell calls onToggleDay with currentlyDone=true", () => {
 		// Mark today as done.
 		const todayDayKey = dayKey(TODAY);
-		const { weeks } = buildHeatmap([todayDayKey], TODAY, HEATMAP_WEEK_COUNT);
 		const onToggleDay = vi.fn();
-		const { container } = render(
-			<HabitHeatmap
-				weeks={weeks}
-				color={HABIT_COLOR}
-				now={TODAY}
-				onToggleDay={onToggleDay}
-			/>,
-		);
+		const { container } = renderHeatmap([todayDayKey], onToggleDay);
 
 		const todayCell = container.querySelector(
 			"[data-today='true']",
@@ -251,16 +239,8 @@ describe("HabitHeatmap interactions", () => {
 	});
 
 	it("clicking a future cell does NOT call onToggleDay", () => {
-		const { weeks } = buildHeatmap([], TODAY, HEATMAP_WEEK_COUNT);
 		const onToggleDay = vi.fn();
-		const { container } = render(
-			<HabitHeatmap
-				weeks={weeks}
-				color={HABIT_COLOR}
-				now={TODAY}
-				onToggleDay={onToggleDay}
-			/>,
-		);
+		const { container } = renderHeatmap([], onToggleDay);
 
 		const futureCells = container.querySelectorAll("[data-state='future']");
 		expect(futureCells.length).toBeGreaterThan(0);
@@ -271,16 +251,8 @@ describe("HabitHeatmap interactions", () => {
 		expect(onToggleDay).not.toHaveBeenCalled();
 	});
 
-	it("non-future buttons have an accessible aria-label describing state and action", () => {
-		const { weeks } = buildHeatmap([], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
-			<HabitHeatmap
-				weeks={weeks}
-				color={HABIT_COLOR}
-				now={TODAY}
-				onToggleDay={vi.fn()}
-			/>,
-		);
+	it("non-future buttons have an accessible aria-label describing state and action — en", () => {
+		const { container } = renderHeatmap([], vi.fn());
 
 		// Today is missed — its aria-label should mention "not done" and "tap to mark done".
 		const todayCell = container.querySelector(
@@ -291,17 +263,9 @@ describe("HabitHeatmap interactions", () => {
 		expect(label).toContain("tap to mark done");
 	});
 
-	it("done cell aria-label mentions done and tap to unmark", () => {
+	it("done cell aria-label mentions done and tap to unmark — en", () => {
 		const todayDayKey = dayKey(TODAY);
-		const { weeks } = buildHeatmap([todayDayKey], TODAY, HEATMAP_WEEK_COUNT);
-		const { container } = render(
-			<HabitHeatmap
-				weeks={weeks}
-				color={HABIT_COLOR}
-				now={TODAY}
-				onToggleDay={vi.fn()}
-			/>,
-		);
+		const { container } = renderHeatmap([todayDayKey], vi.fn());
 
 		const todayCell = container.querySelector(
 			"[data-today='true']",

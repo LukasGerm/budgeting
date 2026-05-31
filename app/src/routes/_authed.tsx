@@ -1,3 +1,4 @@
+import { useLingui } from "@lingui/react/macro";
 import {
 	createFileRoute,
 	Link,
@@ -82,6 +83,7 @@ export const Route = createFileRoute("/_authed")({
  */
 function AuthedLayout() {
 	const { pathname } = useLocation();
+	const { t } = useLingui();
 	const showNav = pathname !== "/onboarding";
 
 	return (
@@ -105,7 +107,7 @@ function AuthedLayout() {
 					    gear aligns with page content, not the raw viewport edge. */}
 					<div className="mx-auto flex max-w-md items-center justify-end px-8 py-2">
 						<Button variant="ghost" size="icon" asChild>
-							<Link to="/settings" aria-label="Settings">
+							<Link to="/settings" aria-label={t`Settings`}>
 								<Settings className="size-5" aria-hidden="true" />
 							</Link>
 						</Button>

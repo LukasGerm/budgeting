@@ -5,8 +5,8 @@
  *
  * Reads a `PacePoint[]` (see `domain/dashboard.ts`) whose money fields are
  * integer **cents** — the tooltip converts each back to a euro string via
- * `Money.fromCents(v).format()`. The series already stops at `now`, so the chart
- * never draws into the future.
+ * `useFormat().formatMoney(...)`. The series already stops at `now`, so the
+ * chart never draws into the future.
  *
  * Over-pace emphasis: wherever the actual net is *above* the ideal (spending
  * faster than the straight-line pace) a red area is shaded between the two
@@ -21,6 +21,7 @@
  * only after the client effect runs — no layout shift, no hydration error.
  */
 
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useState } from "react";
 import {
 	Area,
@@ -43,61 +44,18 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from "#/components/ui/chart";
-import { Money, type PacePoint } from "#/domain";
-
-/**
- * Compact Y-axis tick label for integer-cent values.
- *
- * Rules (using de-DE `,` as decimal separator):
- *   |cents| <  100_000  (< €1 000) → `€N`           e.g. `€999`
- *   |cents| < 1_000_000 (< €10 000) → `€N,Dk`       e.g. `€1,2k`
- *   |cents| ≥ 1_000_000 (≥ €10 000) → `€Nk`         e.g. `€12k`
- *
- * Negatives are handled symmetrically with a leading `-` before `€`.
- */
-export function formatAxisCents(cents: number): string {
-	const sign = cents < 0 ? "-" : "";
-	const abs = Math.abs(cents);
-	// Convert to whole euros (truncate, not round, to stay conservative).
-	const euros = Math.trunc(abs / 100);
-
-	if (abs < 100_000) {
-		// Under €1 000: show whole euros, no k suffix.
-		return `${sign}€${euros}`;
-	}
-
-	const thousands = abs / 100_000; // in units of €1 000
-	if (abs < 1_000_000) {
-		// €1 000 – €9 999: one decimal place + k, using comma separator.
-		const formatted = thousands.toFixed(1).replace(".", ",");
-		return `${sign}€${formatted}k`;
-	}
-
-	// €10 000+: whole thousands + k, no decimal.
-	// Note: the €9 999→€10 000 seam (€10,0k vs €10k) is unreachable in practice
-	// because Recharts generates "nice" round axis ticks that skip that boundary.
-	// Truncation (not rounding) is intentional — matches divideIntFloor/toDecimalString
-	// conservative behaviour in the domain layer; do not change to Math.round.
-	const wholeThousands = Math.trunc(abs / 100_000);
-	return `${sign}€${wholeThousands}k`;
-}
+import type { PacePoint } from "#/domain";
+import { useFormat } from "#/i18n/use-format";
 
 const CHART_HEIGHT = "h-[220px]";
 
-const chartConfig = {
-	actualNet: {
-		label: "Spent (net)",
-		color: "var(--chart-2)",
-	},
-	idealNet: {
-		label: "Ideal pace",
-		color: "var(--muted-foreground)",
-	},
-	// Drives the over-pace shading colour (theme-aware red).
-	over: {
-		label: "Over pace",
-		color: "var(--destructive)",
-	},
+// Chart config labels are translated at render time via useLingui().
+// The object is stable (no locale-reactive updates needed) since Recharts
+// reads these once per render and the whole component re-renders on locale change.
+const chartConfigBase = {
+	actualNet: { color: "var(--chart-2)" },
+	idealNet: { color: "var(--muted-foreground)" },
+	over: { color: "var(--destructive)" },
 } satisfies ChartConfig;
 
 interface PaceLineChartProps {
@@ -124,14 +82,26 @@ export function PaceLineChart({ series }: PaceLineChartProps) {
 		setMounted(true);
 	}, []);
 
+	// Capture format fns and translations at the top of the component — do NOT
+	// call hooks inside Recharts formatter callbacks.
+	const { formatMoney, formatAxisCents } = useFormat();
+	const { t } = useLingui();
 	const rows = toRows(series);
+
+	const chartConfig = {
+		actualNet: { ...chartConfigBase.actualNet, label: t`Spent (net)` },
+		idealNet: { ...chartConfigBase.idealNet, label: t`Ideal pace` },
+		over: { ...chartConfigBase.over, label: t`Over pace` },
+	} satisfies ChartConfig;
 
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Pace this cycle</CardTitle>
+				<CardTitle>
+					<Trans>Pace this cycle</Trans>
+				</CardTitle>
 				<CardDescription>
-					Net spending vs. the steady daily pace
+					<Trans>Net spending vs. the steady daily pace</Trans>
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -146,7 +116,7 @@ export function PaceLineChart({ series }: PaceLineChartProps) {
 					<div
 						className={`${CHART_HEIGHT} flex w-full items-center justify-center text-center text-muted-foreground text-sm`}
 					>
-						Not enough data yet — come back tomorrow.
+						<Trans>Not enough data yet — come back tomorrow.</Trans>
 					</div>
 				) : (
 					<ChartContainer
@@ -160,7 +130,7 @@ export function PaceLineChart({ series }: PaceLineChartProps) {
 								tickLine={false}
 								axisLine={false}
 								tickMargin={8}
-								tickFormatter={(v) => `Day ${v}`}
+								tickFormatter={(v) => t`Day ${v}`}
 								minTickGap={24}
 							/>
 							<YAxis
@@ -172,7 +142,7 @@ export function PaceLineChart({ series }: PaceLineChartProps) {
 							<ChartTooltip
 								content={
 									<ChartTooltipContent
-										labelFormatter={(label) => `Day ${label}`}
+										labelFormatter={(label) => t`Day ${label}`}
 										formatter={(value, name) => (
 											<div className="flex w-full items-center justify-between gap-3">
 												<span className="text-muted-foreground">
@@ -180,7 +150,7 @@ export function PaceLineChart({ series }: PaceLineChartProps) {
 														?.label ?? name}
 												</span>
 												<span className="font-medium font-mono tabular-nums">
-													{Money.fromCents(Number(value)).format()}
+													{formatMoney(Number(value))}
 												</span>
 											</div>
 										)}

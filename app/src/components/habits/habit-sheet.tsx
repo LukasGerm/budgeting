@@ -16,6 +16,7 @@
  * immutable post-create.
  */
 
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -38,6 +39,7 @@ import { Label } from "#/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
 import type { Habit } from "#/hooks/use-habits";
 import { useCreateHabit, useUpdateHabit } from "#/hooks/use-habits";
+import { errorCodeFromTRPC, useErrorMessage } from "#/i18n/use-error-message";
 
 interface HabitSheetProps {
 	/**
@@ -86,6 +88,8 @@ export function HabitSheet({
 	const createHabit = useCreateHabit();
 	const updateHabit = useUpdateHabit();
 	const isEdit = existingHabit != null;
+	const { t } = useLingui();
+	const getErrorMessage = useErrorMessage();
 
 	function handleOpenChange(next: boolean) {
 		if (isControlled) {
@@ -117,10 +121,10 @@ export function HabitSheet({
 				{
 					onSuccess: () => {
 						handleOpenChange(false);
-						toast("Habit updated");
+						toast(t`Habit updated`);
 					},
-					onError: () => {
-						toast.error("Couldn't save that. Check your connection.");
+					onError: (e) => {
+						toast.error(getErrorMessage(errorCodeFromTRPC(e) ?? "SAVE_FAILED"));
 					},
 				},
 			);
@@ -133,18 +137,18 @@ export function HabitSheet({
 			{
 				onSuccess: () => {
 					handleOpenChange(false);
-					toast("Habit created");
+					toast(t`Habit created`);
 				},
-				onError: () => {
-					toast.error("Couldn't save that. Check your connection.");
+				onError: (e) => {
+					toast.error(getErrorMessage(errorCodeFromTRPC(e) ?? "SAVE_FAILED"));
 				},
 			},
 		);
 	}
 
-	const title = isEdit ? "Edit habit" : "New habit";
-	const submitLabel = isEdit ? "Save changes" : "Create habit";
-	const submittingLabel = isEdit ? "Saving…" : "Creating…";
+	const title = isEdit ? t`Edit habit` : t`New habit`;
+	const submitLabel = isEdit ? t`Save changes` : t`Create habit`;
+	const submittingLabel = isEdit ? t`Saving…` : t`Creating…`;
 
 	const content = (
 		<DrawerContent>
@@ -152,16 +156,18 @@ export function HabitSheet({
 				<DrawerHeader className="p-0">
 					<DrawerTitle>{title}</DrawerTitle>
 					<DrawerDescription className="sr-only">
-						Enter a name and pick an icon for your habit.
+						<Trans>Enter a name and pick an icon for your habit.</Trans>
 					</DrawerDescription>
 				</DrawerHeader>
 
 				{/* Name input */}
 				<div className="flex flex-col gap-2">
-					<Label htmlFor="habit-name">Name</Label>
+					<Label htmlFor="habit-name">
+						<Trans>Name</Trans>
+					</Label>
 					<Input
 						id="habit-name"
-						placeholder="e.g. Read for 20 minutes"
+						placeholder={t`e.g. Read for 20 minutes`}
 						value={name}
 						onChange={(e) => setName(e.target.value)}
 						maxLength={60}
@@ -171,7 +177,9 @@ export function HabitSheet({
 
 				{/* Icon grid */}
 				<div className="flex flex-col gap-2">
-					<Label>Icon</Label>
+					<Label>
+						<Trans>Icon</Trans>
+					</Label>
 					<ToggleGroup
 						type="single"
 						value={icon}
@@ -180,13 +188,13 @@ export function HabitSheet({
 						}}
 						className="flex flex-wrap gap-2"
 					>
-						{HABIT_ICON_NAMES.map((name) => {
-							const Icon = HABIT_ICON_COMPONENTS[name];
+						{HABIT_ICON_NAMES.map((iconName) => {
+							const Icon = HABIT_ICON_COMPONENTS[iconName];
 							return (
 								<ToggleGroupItem
-									key={name}
-									value={name}
-									aria-label={name}
+									key={iconName}
+									value={iconName}
+									aria-label={iconName}
 									className="size-10 rounded-md"
 								>
 									<Icon className="size-4" />
@@ -225,7 +233,7 @@ export function HabitSheet({
 					<Button
 						size="icon"
 						className="fixed right-6 bottom-20 z-40 size-16 rounded-full shadow-lg"
-						aria-label="Add a habit"
+						aria-label={t`Add a habit`}
 					>
 						<Plus className="size-7" />
 					</Button>

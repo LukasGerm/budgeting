@@ -12,6 +12,7 @@
  * of the spend sheet.
  */
 
+import { useLingui } from "@lingui/react/macro";
 import { Delete } from "lucide-react";
 import { Button } from "#/components/ui/button";
 
@@ -32,6 +33,7 @@ export type KeypadKey =
 const DIGIT_KEYS: KeypadKey[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 export function NumericKeypad({ onKey }: { onKey: (key: KeypadKey) => void }) {
+	const { t } = useLingui();
 	return (
 		<div className="grid grid-cols-3 gap-2">
 			{DIGIT_KEYS.map((key) => (
@@ -50,11 +52,9 @@ export function NumericKeypad({ onKey }: { onKey: (key: KeypadKey) => void }) {
 				variant="ghost"
 				className="h-14 font-medium text-2xl"
 				onClick={() => onKey(".")}
-				aria-label="Decimal separator"
+				aria-label={t`Decimal separator`}
 			>
-				{/* German decimal separator (de-DE). The key still emits the canonical
-				    "." that `Money.fromDecimalString` parses; only the label is localised. */}
-				,
+				{/* The glyph stays locale-independent (the keypad only emits "."). */},
 			</Button>
 			<Button
 				type="button"
@@ -69,7 +69,7 @@ export function NumericKeypad({ onKey }: { onKey: (key: KeypadKey) => void }) {
 				variant="ghost"
 				className="h-14"
 				onClick={() => onKey("backspace")}
-				aria-label="Backspace"
+				aria-label={t`Backspace`}
 			>
 				<Delete className="size-6" />
 			</Button>

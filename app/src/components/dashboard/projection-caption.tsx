@@ -13,18 +13,28 @@
  * projection reads as a warning.
  */
 
+import { Trans } from "@lingui/react/macro";
 import { Card, CardContent } from "#/components/ui/card";
 import type { EndOfCycleProjection } from "#/domain";
+import { useFormat } from "#/i18n/use-format";
 
 interface ProjectionCaptionProps {
 	projection: EndOfCycleProjection;
 }
 
 export function ProjectionCaption({ projection }: ProjectionCaptionProps) {
+	const { formatMoney } = useFormat();
+
 	// Early-cycle suppressed state: the extrapolation is too volatile to show.
 	if (projection.suppressed) return null;
 
 	const isOver = projection.overUnder === "over";
+
+	const amount = (
+		<span className="font-semibold tabular-nums">
+			{formatMoney(projection.difference.toCents())}
+		</span>
+	);
 
 	return (
 		<Card>
@@ -32,11 +42,11 @@ export function ProjectionCaption({ projection }: ProjectionCaptionProps) {
 				<p
 					className={`text-sm ${isOver ? "text-destructive" : "text-muted-foreground"}`}
 				>
-					On pace to finish{" "}
-					<span className="font-semibold tabular-nums">
-						{projection.difference.format()}
-					</span>{" "}
-					{isOver ? "over" : "under"} budget.
+					{isOver ? (
+						<Trans>On pace to finish {amount} over budget.</Trans>
+					) : (
+						<Trans>On pace to finish {amount} under budget.</Trans>
+					)}
 				</p>
 			</CardContent>
 		</Card>

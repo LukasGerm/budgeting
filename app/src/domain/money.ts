@@ -3,21 +3,18 @@
  *
  * Money is the only currency representation in the domain. The constructor
  * accepts integer cents; arithmetic returns new Money instances so the type
- * is immutable. Formatting to a decimal string happens at the UI edge via
- * `format()`. The DB, the wire, and the domain all speak cents — only the
- * pixels see euros.
+ * is immutable. Display formatting lives at the UI edge via `useFormat()`
+ * (Module B); this class only knows arithmetic and the keypad's decimal format.
  *
  * Negative amounts are allowed (the daily-available number is allowed to go
  * negative and is not clamped — PRODUCT.md). Non-integer or non-finite
  * inputs throw, because rounding decisions belong at the boundary, not here.
+ *
+ * Removed from this class (Issue 01 — i18n refactor):
+ *   - `format()` → use `useFormat().formatMoney(money.toCents())` in components
+ *   - `fromEuroString()` → use `useFormat().parseAmount(input)` in components
+ *   These were locale-specific (de-DE only) and belong at the UI edge.
  */
-
-const EUR_FORMATTER = new Intl.NumberFormat("de-DE", {
-	style: "currency",
-	currency: "EUR",
-	minimumFractionDigits: 2,
-	maximumFractionDigits: 2,
-});
 
 export class Money {
 	private constructor(private readonly cents: number) {}
@@ -34,27 +31,9 @@ export class Money {
 	}
 
 	/**
-	 * Parse a decimal EUR string ("12,50" or "12.50") from a form input.
-	 * Used only at the UI edge. Throws if not a valid amount.
-	 */
-	static fromEuroString(input: string): Money {
-		const normalised = input.trim().replace(",", ".");
-		if (!/^-?\d+(\.\d{1,2})?$/.test(normalised)) {
-			throw new Error(`Invalid euro amount: ${input}`);
-		}
-		const [whole, frac = ""] = normalised.split(".");
-		const paddedFrac = `${frac}00`.slice(0, 2);
-		const sign = whole.startsWith("-") ? -1 : 1;
-		const wholeAbs = whole.replace("-", "");
-		const totalCents = sign * (Number(wholeAbs) * 100 + Number(paddedFrac));
-		return new Money(totalCents);
-	}
-
-	/**
 	 * Parse the string a numeric keypad builds ("12", "12.5", "12.50",
-	 * "0.99") into integer cents. This is the keypad's counterpart to
-	 * `fromEuroString`: it accepts a partially-typed amount, so an empty or
-	 * dot-only string is "nothing entered yet" → 0 cents rather than an error.
+	 * "0.99") into integer cents. This is locale-independent: the keypad
+	 * only ever emits "." as its decimal separator.
 	 *
 	 * Rules:
 	 *   - "" / "." → 0 (nothing meaningful typed)
@@ -138,13 +117,5 @@ export class Money {
 
 	equals(other: Money): boolean {
 		return this.cents === other.cents;
-	}
-
-	/**
-	 * Format as a localised EUR string for display. The only place the domain
-	 * speaks to the UI — keep this thin.
-	 */
-	format(): string {
-		return EUR_FORMATTER.format(this.cents / 100);
 	}
 }

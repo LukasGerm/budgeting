@@ -7,8 +7,8 @@
  * (as `getRecentCycles`/`cycleTotals` yield). For display we reverse it so the
  * bars read **oldest → newest, left → right** like a calendar. `netCents` is
  * integer **cents** — the tooltip and reference label convert back via
- * `Money.fromCents(v).format()`. Each bar's label is the cycle's month derived
- * from `cycle.start` (de-DE short month, e.g. "Mär").
+ * `useFormat().formatMoney(...)`. Each bar's label is the cycle's month derived
+ * from `cycle.start` via `useFormat().formatDate(date, "short")` (locale-aware).
  *
  * This is a NET chart (it includes adjustments), matching the pace line and the
  * monthly budget it's compared against — not the SPEND-only daily-spend chart.
@@ -26,6 +26,7 @@
  * after the client effect runs — no layout shift, no hydration error.
  */
 
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useState } from "react";
 import {
 	Bar,
@@ -48,20 +49,17 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from "#/components/ui/chart";
-import { type CycleTotal, Money } from "#/domain";
+import type { CycleTotal, Money } from "#/domain";
+import { useFormat } from "#/i18n/use-format";
 
 const CHART_HEIGHT = "h-[200px]";
 
 /** A cycle needs at least this many cycles-with-data before the trend is shown. */
 const MIN_CYCLES_WITH_DATA = 2;
 
-const MONTH_FORMATTER = new Intl.DateTimeFormat("de-DE", { month: "short" });
-
-const chartConfig = {
-	netCents: {
-		label: "Total (net)",
-		color: "var(--chart-1)",
-	},
+// Label is translated at render time.
+const chartConfigBase = {
+	netCents: { color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
 interface MonthlyTrendChartProps {
@@ -77,10 +75,13 @@ interface TrendRow {
 	netCents: number;
 }
 
-function toRows(totals: CycleTotal[]): TrendRow[] {
+function toRows(
+	totals: CycleTotal[],
+	formatDate: (date: Date, style: "short") => string,
+): TrendRow[] {
 	// `totals` is newest → oldest; reverse so bars read oldest → newest L→R.
 	return [...totals].reverse().map((t) => ({
-		label: MONTH_FORMATTER.format(t.cycle.start),
+		label: formatDate(t.cycle.start, "short"),
 		netCents: t.netCents,
 	}));
 }
@@ -95,10 +96,18 @@ export function MonthlyTrendChart({
 		setMounted(true);
 	}, []);
 
-	const cyclesWithData = totals.filter((t) => t.entryCount > 0).length;
+	// Capture format fns and translations at the top of the component — do NOT
+	// call hooks inside Recharts formatter callbacks.
+	const { formatMoney, formatDate } = useFormat();
+	const { t } = useLingui();
+	const cyclesWithData = totals.filter((tot) => tot.entryCount > 0).length;
 	const enoughData = cyclesWithData >= MIN_CYCLES_WITH_DATA;
-	const rows = toRows(totals);
+	const rows = toRows(totals, formatDate);
 	const monthlyCents = monthlyAmount.toCents();
+
+	const chartConfig = {
+		netCents: { ...chartConfigBase.netCents, label: t`Total (net)` },
+	} satisfies ChartConfig;
 
 	// Pin the Y-axis so the budget reference line is always on-screen. Recharts
 	// auto-scales to the tallest bar, so when every cycle's net is under budget
@@ -111,9 +120,13 @@ export function MonthlyTrendChart({
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Monthly totals</CardTitle>
+				<CardTitle>
+					<Trans>Monthly totals</Trans>
+				</CardTitle>
 				<CardDescription>
-					Net total per cycle vs. your monthly budget (the dashed line).
+					<Trans>
+						Net total per cycle vs. your monthly budget (the dashed line).
+					</Trans>
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -122,8 +135,10 @@ export function MonthlyTrendChart({
 					<div
 						className={`${CHART_HEIGHT} flex w-full items-center justify-center text-center text-muted-foreground text-sm`}
 					>
-						Your monthly trend will appear once you've completed a couple of
-						cycles.
+						<Trans>
+							Your monthly trend will appear once you've completed a couple of
+							cycles.
+						</Trans>
 					</div>
 				) : !mounted ? (
 					// SSR / pre-mount placeholder: same height, no chart, no flash.
@@ -154,10 +169,10 @@ export function MonthlyTrendChart({
 										formatter={(value) => (
 											<div className="flex w-full items-center justify-between gap-3">
 												<span className="text-muted-foreground">
-													Total (net)
+													<Trans>Total (net)</Trans>
 												</span>
 												<span className="font-medium font-mono tabular-nums">
-													{Money.fromCents(Number(value)).format()}
+													{formatMoney(Number(value))}
 												</span>
 											</div>
 										)}
@@ -170,7 +185,7 @@ export function MonthlyTrendChart({
 								stroke="var(--muted-foreground)"
 								strokeDasharray="5 4"
 								label={{
-									value: monthlyAmount.format(),
+									value: formatMoney(monthlyAmount.toCents()),
 									position: "insideTopRight",
 									fill: "var(--muted-foreground)",
 									fontSize: 11,

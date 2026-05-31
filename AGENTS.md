@@ -32,7 +32,7 @@ This is a monorepo with a single application at `app/`. All commands below assum
 
 ## Common commands (run from `app/`)
 
-The package manager is **pnpm** (`pnpm-lock.yaml`, `packageManager` field). Node ≥ 20.19 is required (Prisma 7); `app/.nvmrc` pins 22.
+The package manager is **pnpm** (`pnpm-lock.yaml`, `packageManager` field). Node ≥ 20.19 is required (Prisma 7); `app/.nvmrc` pins 22.22.3 (the Lingui v6 `extract`/`compile` CLI silently no-ops on Node < 22.18).
 
 ```bash
 pnpm dev             # vite dev server on port 3000

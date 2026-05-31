@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import {
 	createFileRoute,
 	Link,
@@ -8,6 +9,10 @@ import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
+import {
+	errorCodeFromBetterAuth,
+	useErrorMessage,
+} from "#/i18n/use-error-message";
 import { authClient } from "#/lib/auth-client";
 import { getServerSession } from "#/lib/auth-server";
 
@@ -23,6 +28,7 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
 	const router = useRouter();
+	const getErrorMessage = useErrorMessage();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
@@ -35,7 +41,8 @@ function LoginPage() {
 		const result = await authClient.signIn.email({ email, password });
 		setSubmitting(false);
 		if (result.error) {
-			setError(result.error.message ?? "Could not sign in.");
+			const code = errorCodeFromBetterAuth(result) ?? "UNKNOWN";
+			setError(getErrorMessage(code));
 			return;
 		}
 		await router.invalidate();
@@ -45,14 +52,18 @@ function LoginPage() {
 	return (
 		<div className="mx-auto flex min-h-svh max-w-sm flex-col justify-center gap-6 p-8">
 			<div className="flex flex-col gap-1">
-				<h1 className="text-2xl font-semibold">Log in</h1>
+				<h1 className="text-2xl font-semibold">
+					<Trans>Log in</Trans>
+				</h1>
 				<p className="text-muted-foreground text-sm">
-					Welcome back. Enter your details to continue.
+					<Trans>Welcome back. Enter your details to continue.</Trans>
 				</p>
 			</div>
 			<form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
 				<div className="flex flex-col gap-2">
-					<Label htmlFor="email">Email</Label>
+					<Label htmlFor="email">
+						<Trans>Email</Trans>
+					</Label>
 					<Input
 						id="email"
 						name="email"
@@ -64,7 +75,9 @@ function LoginPage() {
 					/>
 				</div>
 				<div className="flex flex-col gap-2">
-					<Label htmlFor="password">Password</Label>
+					<Label htmlFor="password">
+						<Trans>Password</Trans>
+					</Label>
 					<Input
 						id="password"
 						name="password"
@@ -81,14 +94,16 @@ function LoginPage() {
 					</p>
 				) : null}
 				<Button type="submit" disabled={submitting}>
-					{submitting ? "Logging in…" : "Log in"}
+					{submitting ? <Trans>Logging in…</Trans> : <Trans>Log in</Trans>}
 				</Button>
 			</form>
 			<p className="text-muted-foreground text-sm">
-				No account yet?{" "}
-				<Link to="/signup" className="text-foreground underline">
-					Sign up
-				</Link>
+				<Trans>
+					No account yet?{" "}
+					<Link to="/signup" className="text-foreground underline">
+						Sign up
+					</Link>
+				</Trans>
 			</p>
 		</div>
 	);
