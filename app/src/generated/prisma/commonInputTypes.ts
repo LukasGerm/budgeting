@@ -167,6 +167,40 @@ export type EnumEntryKindWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumEntryKindFilter<$PrismaModel>
 }
 
+export type EnumMuscleGroupFilter<$PrismaModel = never> = {
+  equals?: $Enums.MuscleGroup | Prisma.EnumMuscleGroupFieldRefInput<$PrismaModel>
+  in?: $Enums.MuscleGroup[] | Prisma.ListEnumMuscleGroupFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MuscleGroup[] | Prisma.ListEnumMuscleGroupFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMuscleGroupFilter<$PrismaModel> | $Enums.MuscleGroup
+}
+
+export type EnumEquipmentFilter<$PrismaModel = never> = {
+  equals?: $Enums.Equipment | Prisma.EnumEquipmentFieldRefInput<$PrismaModel>
+  in?: $Enums.Equipment[] | Prisma.ListEnumEquipmentFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Equipment[] | Prisma.ListEnumEquipmentFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEquipmentFilter<$PrismaModel> | $Enums.Equipment
+}
+
+export type EnumMuscleGroupWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MuscleGroup | Prisma.EnumMuscleGroupFieldRefInput<$PrismaModel>
+  in?: $Enums.MuscleGroup[] | Prisma.ListEnumMuscleGroupFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MuscleGroup[] | Prisma.ListEnumMuscleGroupFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMuscleGroupWithAggregatesFilter<$PrismaModel> | $Enums.MuscleGroup
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMuscleGroupFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMuscleGroupFilter<$PrismaModel>
+}
+
+export type EnumEquipmentWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.Equipment | Prisma.EnumEquipmentFieldRefInput<$PrismaModel>
+  in?: $Enums.Equipment[] | Prisma.ListEnumEquipmentFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Equipment[] | Prisma.ListEnumEquipmentFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEquipmentWithAggregatesFilter<$PrismaModel> | $Enums.Equipment
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEquipmentFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEquipmentFilter<$PrismaModel>
+}
+
 export type DateTimeNullableFilter<$PrismaModel = never> = {
   equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null
   in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -190,6 +224,33 @@ export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
+}
+
+export type IntNullableFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null
+  in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
+  notIn?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
+  lt?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedIntNullableFilter<$PrismaModel> | number | null
+}
+
+export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null
+  in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
+  notIn?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
+  lt?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _avg?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+  _sum?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedIntNullableFilter<$PrismaModel>
 }
 
 export type NestedStringFilter<$PrismaModel = never> = {
@@ -358,6 +419,40 @@ export type NestedEnumEntryKindWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumEntryKindFilter<$PrismaModel>
 }
 
+export type NestedEnumMuscleGroupFilter<$PrismaModel = never> = {
+  equals?: $Enums.MuscleGroup | Prisma.EnumMuscleGroupFieldRefInput<$PrismaModel>
+  in?: $Enums.MuscleGroup[] | Prisma.ListEnumMuscleGroupFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MuscleGroup[] | Prisma.ListEnumMuscleGroupFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMuscleGroupFilter<$PrismaModel> | $Enums.MuscleGroup
+}
+
+export type NestedEnumEquipmentFilter<$PrismaModel = never> = {
+  equals?: $Enums.Equipment | Prisma.EnumEquipmentFieldRefInput<$PrismaModel>
+  in?: $Enums.Equipment[] | Prisma.ListEnumEquipmentFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Equipment[] | Prisma.ListEnumEquipmentFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEquipmentFilter<$PrismaModel> | $Enums.Equipment
+}
+
+export type NestedEnumMuscleGroupWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MuscleGroup | Prisma.EnumMuscleGroupFieldRefInput<$PrismaModel>
+  in?: $Enums.MuscleGroup[] | Prisma.ListEnumMuscleGroupFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MuscleGroup[] | Prisma.ListEnumMuscleGroupFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMuscleGroupWithAggregatesFilter<$PrismaModel> | $Enums.MuscleGroup
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMuscleGroupFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMuscleGroupFilter<$PrismaModel>
+}
+
+export type NestedEnumEquipmentWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.Equipment | Prisma.EnumEquipmentFieldRefInput<$PrismaModel>
+  in?: $Enums.Equipment[] | Prisma.ListEnumEquipmentFieldRefInput<$PrismaModel>
+  notIn?: $Enums.Equipment[] | Prisma.ListEnumEquipmentFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEquipmentWithAggregatesFilter<$PrismaModel> | $Enums.Equipment
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEquipmentFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEquipmentFilter<$PrismaModel>
+}
+
 export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
   equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null
   in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -381,6 +476,33 @@ export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
+}
+
+export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null
+  in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
+  notIn?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
+  lt?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _avg?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+  _sum?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedIntNullableFilter<$PrismaModel>
+}
+
+export type NestedFloatNullableFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel> | null
+  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
+  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
+  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedFloatNullableFilter<$PrismaModel> | number | null
 }
 
 

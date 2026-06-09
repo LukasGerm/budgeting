@@ -126,6 +126,17 @@ describe("formatDate", () => {
 		expect(result.toLowerCase()).toContain("mai");
 	});
 
+	it("dayMonth style — day + short month, no year", () => {
+		const enResult = formatDate(date, "dayMonth", "en");
+		const deResult = formatDate(date, "dayMonth", "de");
+		expect(enResult).toContain("31");
+		expect(enResult.toLowerCase()).toContain("may");
+		expect(enResult).not.toContain("2025");
+		expect(deResult).toContain("31");
+		expect(deResult.toLowerCase()).toContain("mai");
+		expect(deResult).not.toContain("2025");
+	});
+
 	it("numeric style contains day, month, year", () => {
 		const enResult = formatDate(date, "numeric", "en");
 		const deResult = formatDate(date, "numeric", "de");

@@ -61,6 +61,34 @@ export function useErrorMessage(): (code: string | null | undefined) => string {
 			case "NOTE_TOO_LONG":
 				return t`Note must be 280 characters or fewer.`;
 
+			// Workout tracker / exercises
+			case "EXERCISE_NAME_REQUIRED":
+				return t`Exercise name can't be empty.`;
+			case "EXERCISE_NAME_TOO_LONG":
+				return t`Exercise name must be 80 characters or fewer.`;
+			case "EXERCISE_NAME_TAKEN":
+				return t`An exercise with this name already exists.`;
+			case "EXERCISE_NOT_FOUND":
+				return t`That exercise doesn't exist anymore. Refresh and try again.`;
+
+			// Workout tracker / routines
+			case "ROUTINE_NAME_REQUIRED":
+				return t`Plan name can't be empty.`;
+			case "ROUTINE_NAME_TOO_LONG":
+				return t`Plan name must be 80 characters or fewer.`;
+			case "ROUTINE_NO_EXERCISES":
+				return t`Add at least one exercise to the plan.`;
+			case "ROUTINE_NOT_FOUND":
+				return t`This plan doesn't exist anymore.`;
+
+			// Workout tracker / live workouts
+			case "WORKOUT_ALREADY_ACTIVE":
+				return t`You already have a workout in progress.`;
+			case "WORKOUT_NOT_FOUND":
+				return t`This workout doesn't exist anymore.`;
+			case "WORKOUT_NO_COMPLETED_SETS":
+				return t`Complete at least one set to finish the workout.`;
+
 			// Auth
 			case "INVALID_CREDENTIALS":
 				return t`Invalid email or password.`;

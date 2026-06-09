@@ -23,6 +23,38 @@ msgstr "{0, plural, one {vor # Tag} other {vor # Tagen}}"
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# Tag} other {# Tage}}"
 
+#. placeholder {0}: exercises.length
+#: src/routes/_authed/workouts.index.tsx:242
+msgid "{0, plural, one {# exercise in your library} other {# exercises in your library}}"
+msgstr "{0, plural, one {# Übung in deiner Bibliothek} other {# Übungen in deiner Bibliothek}}"
+
+#. placeholder {0}: routine.exerciseCount
+#: src/components/workouts/routine-card.tsx:129
+msgid "{0, plural, one {# exercise} other {# exercises}}"
+msgstr "{0, plural, one {# Übung} other {# Übungen}}"
+
+#. placeholder {0}: allSets.length
+#. placeholder {0}: routine.totalTargetSets
+#. placeholder {0}: workout.totalSets
+#: src/components/workouts/routine-card.tsx:135
+#: src/components/workouts/workout-history-card.tsx:39
+#: src/routes/_authed/workouts.history.$workoutId.tsx:79
+msgid "{0, plural, one {# set} other {# sets}}"
+msgstr "{0, plural, one {# Satz} other {# Sätze}}"
+
+#. placeholder {0}: allSets.length
+#: src/routes/_authed/workouts.active.tsx:171
+msgid "{completedSets}/{0} sets"
+msgstr "{completedSets}/{0} Sätze"
+
+#: src/routes/_authed/workouts.active.tsx:259
+msgid "{incompleteSets, plural, one {Only completed sets are saved — # unchecked set will be discarded.} other {Only completed sets are saved — # unchecked sets will be discarded.}}"
+msgstr "{incompleteSets, plural, one {Nur abgehakte Sätze werden gespeichert — # nicht abgehakter Satz wird verworfen.} other {Nur abgehakte Sätze werden gespeichert — # nicht abgehakte Sätze werden verworfen.}}"
+
+#: src/components/workouts/routine-form.tsx:129
+msgid "{minutes} min"
+msgstr "{minutes} min"
+
 #: src/routes/_authed/index.tsx:136
 msgid "{money} over budget"
 msgstr "{money} über Budget"
@@ -38,6 +70,10 @@ msgstr "{pctSpan} mehr als letzten Monat bisher"
 #: src/routes/_authed/index.tsx:144
 msgid "{remaining} left of {budget} · day {elapsedDays} of {totalDays}"
 msgstr "{remaining} von {budget} übrig · Tag {elapsedDays} von {totalDays}"
+
+#: src/components/workouts/routine-form.tsx:127
+msgid "{seconds} s"
+msgstr "{seconds} s"
 
 #: src/components/entry-form.tsx:215
 msgid "+ Top-up"
@@ -67,6 +103,24 @@ msgstr "Gewohnheit hinzufügen"
 msgid "Add a note"
 msgstr "Notiz hinzufügen"
 
+#: src/i18n/use-error-message.ts:80
+msgid "Add at least one exercise to the plan."
+msgstr "Füge mindestens eine Übung zum Plan hinzu."
+
+#: src/components/workouts/routine-form.tsx:199
+msgid "Add at least one exercise to your plan."
+msgstr "Füge mindestens eine Übung zu deinem Plan hinzu."
+
+#: src/components/workouts/exercise-picker.tsx:156
+#: src/components/workouts/routine-form.tsx:361
+#: src/routes/_authed/workouts.active.tsx:201
+msgid "Add exercise"
+msgstr "Übung hinzufügen"
+
+#: src/components/workouts/workout-exercise-card.tsx:276
+msgid "Add set"
+msgstr "Satz hinzufügen"
+
 #: src/components/spend-sheet.tsx:79
 msgid "Added {magnitudeLabel}"
 msgstr "{magnitudeLabel} hinzugefügt"
@@ -75,9 +129,21 @@ msgstr "{magnitudeLabel} hinzugefügt"
 msgid "Adjust"
 msgstr "Anpassen"
 
+#: src/components/workouts/exercise-picker.tsx:198
+msgid "All"
+msgstr "Alle"
+
 #: src/components/habits/habit-card.tsx:163
 msgid "All completion history for this habit will be permanently removed. This can't be undone."
 msgstr "Alle Erledigungshistorie für diese Gewohnheit wird dauerhaft gelöscht. Das lässt sich nicht rückgängig machen."
+
+#: src/routes/_authed/workouts.active.tsx:265
+msgid "All sets are checked off. Nice work!"
+msgstr "Alle Sätze sind abgehakt. Stark!"
+
+#: src/routes/_authed/workouts.index.tsx:225
+msgid "All workouts"
+msgstr "Alle Workouts"
 
 #: src/routes/signup.tsx:113
 msgid "Already have an account? <0>Log in</0>"
@@ -87,13 +153,17 @@ msgstr "Du hast schon ein Konto? <0>Anmelden</0>"
 msgid "Amount must be non-zero."
 msgstr "Der Betrag darf nicht null sein."
 
-#: src/i18n/use-error-message.ts:68
+#: src/i18n/use-error-message.ts:96
 msgid "An account with this email already exists."
 msgstr "Ein Konto mit dieser E-Mail-Adresse existiert bereits."
 
 #: src/i18n/use-error-message.ts:44
 msgid "An adjustment amount must be non-zero."
 msgstr "Ein Anpassungsbetrag darf nicht null sein."
+
+#: src/i18n/use-error-message.ts:70
+msgid "An exercise with this name already exists."
+msgstr "Eine Übung mit diesem Namen existiert bereits."
 
 #: src/i18n/use-error-message.ts:52
 msgid "Anchor day must be between 1 and 31."
@@ -103,6 +173,10 @@ msgstr "Der Starttag muss zwischen 1 und 31 liegen."
 msgid "Anything you log will show up here."
 msgstr "Alles, was du erfasst, erscheint hier."
 
+#: src/components/workouts/workout-labels.tsx:46
+msgid "Arms"
+msgstr "Arme"
+
 #: src/routes/_authed/index.tsx:117
 msgid "Available today"
 msgstr "Heute verfügbar"
@@ -111,13 +185,60 @@ msgstr "Heute verfügbar"
 msgid "Average / day"
 msgstr "Durchschnitt / Tag"
 
+#: src/components/workouts/workout-labels.tsx:43
+msgid "Back"
+msgstr "Rücken"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:78
+msgctxt "navigation"
+msgid "Back"
+msgstr "Zurück"
+
+#: src/routes/_authed/workouts.history.$workoutId.tsx:70
+msgid "Back to history"
+msgstr "Zurück zum Verlauf"
+
+#: src/components/workouts/exercise-picker.tsx:367
+msgid "Back to library"
+msgstr "Zurück zur Bibliothek"
+
+#: src/routes/_authed/workouts.active.tsx:163
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:112
+#: src/routes/_authed/workouts.history.index.tsx:48
+#: src/routes/_authed/workouts.routines.$routineId.edit.tsx:76
+#: src/routes/_authed/workouts.routines.new.tsx:46
+msgid "Back to workouts"
+msgstr "Zurück zu Workouts"
+
 #: src/components/numeric-keypad.tsx:72
 msgid "Backspace"
 msgstr "Löschen"
 
+#: src/components/workouts/workout-labels.tsx:50
+msgid "Barbell"
+msgstr "Langhantel"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:156
+msgid "Best set"
+msgstr "Bester Satz"
+
+#. placeholder {0}: formatKg(session.bestSetWeightGrams)
+#. placeholder {1}: session.bestSetReps
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:190
+msgid "Best set {0} kg × {1}"
+msgstr "Bester Satz {0} kg × {1}"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:155
+msgid "Best set weight"
+msgstr "Gewicht des besten Satzes"
+
 #: src/components/dashboard/biggest-spends.tsx:39
 msgid "Biggest spends"
 msgstr "Größte Ausgaben"
+
+#: src/components/workouts/workout-labels.tsx:54
+msgid "Bodyweight"
+msgstr "Körpergewicht"
 
 #: src/routes/_authed/settings.tsx:301
 msgid "Budget"
@@ -135,8 +256,16 @@ msgstr "Budget gespeichert."
 msgid "Build streaks by adding habits you want to do every day."
 msgstr "Baue Streaks auf, indem du Gewohnheiten hinzufügst, die du täglich erledigen möchtest."
 
+#: src/components/workouts/workout-labels.tsx:52
+msgid "Cable"
+msgstr "Kabelzug"
+
 #: src/components/entry-form.tsx:298
 #: src/components/habits/habit-card.tsx:171
+#: src/components/workouts/routine-card.tsx:213
+#: src/components/workouts/start-conflict-dialog.tsx:54
+#: src/routes/_authed/workouts.active.tsx:271
+#: src/routes/_authed/workouts.active.tsx:299
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -152,6 +281,10 @@ msgstr "Passe dein Monatsbudget und den Zyklusstart an. Änderungen wirken sich 
 msgid "Changes apply instantly. Your preference is saved to your account."
 msgstr "Änderungen werden sofort übernommen. Deine Einstellung wird in deinem Konto gespeichert."
 
+#: src/components/workouts/workout-labels.tsx:42
+msgid "Chest"
+msgstr "Brust"
+
 #: src/routes/_authed/settings.tsx:236
 msgid "CHF — Swiss Franc"
 msgstr "CHF — Schweizer Franken"
@@ -160,17 +293,45 @@ msgstr "CHF — Schweizer Franken"
 msgid "Choose Spend or Adjust, enter an amount and an optional note, then confirm."
 msgstr "Wähle Ausgabe oder Anpassen, gib einen Betrag und optional eine Notiz ein und bestätige."
 
+#: src/i18n/use-error-message.ts:90
+msgid "Complete at least one set to finish the workout."
+msgstr "Hake mindestens einen Satz ab, um das Workout abzuschließen."
+
+#: src/routes/_authed/workouts.active.tsx:215
+msgid "Complete at least one set to finish."
+msgstr "Hake mindestens einen Satz ab, um abzuschließen."
+
 #: src/components/habits/habit-heatmap.tsx:144
 msgid "Completion history"
 msgstr "Erledigungshistorie"
+
+#: src/components/workouts/workout-labels.tsx:47
+msgid "Core"
+msgstr "Rumpf"
+
+#: src/routes/_authed/workouts.index.tsx:173
+msgid "Create a reusable plan with your exercises, sets, and reps."
+msgstr "Erstelle einen wiederverwendbaren Plan mit deinen Übungen, Sätzen und Wiederholungen."
 
 #: src/routes/signup.tsx:66
 msgid "Create an account to start tracking your budget."
 msgstr "Erstelle ein Konto, um dein Budget zu verfolgen."
 
+#: src/components/workouts/exercise-picker.tsx:359
+msgid "Create and add"
+msgstr "Erstellen und hinzufügen"
+
+#: src/components/workouts/exercise-picker.tsx:270
+msgid "Create custom exercise"
+msgstr "Eigene Übung erstellen"
+
 #: src/components/habits/habit-sheet.tsx:150
 msgid "Create habit"
 msgstr "Gewohnheit erstellen"
+
+#: src/routes/_authed/workouts.routines.new.tsx:56
+msgid "Create plan"
+msgstr "Plan erstellen"
 
 #: src/routes/_authed/habits.tsx:81
 msgid "Create your first habit"
@@ -181,6 +342,8 @@ msgid "Creating account…"
 msgstr "Konto wird erstellt…"
 
 #: src/components/habits/habit-sheet.tsx:151
+#: src/components/workouts/exercise-picker.tsx:357
+#: src/routes/_authed/workouts.routines.new.tsx:57
 msgid "Creating…"
 msgstr "Wird erstellt…"
 
@@ -205,8 +368,8 @@ msgstr "Zyklusbeginn am Tag"
 msgid "Daily spend"
 msgstr "Tagesausgaben"
 
-#: src/components/bottom-nav.tsx:51
-#: src/components/bottom-nav.tsx:52
+#: src/components/bottom-nav.tsx:63
+#: src/components/bottom-nav.tsx:64
 #: src/routes/_authed/dashboard.tsx:77
 msgid "Dashboard"
 msgstr "Dashboard"
@@ -233,8 +396,15 @@ msgstr "Dezimaltrennzeichen"
 #: src/components/entry-form.tsx:307
 #: src/components/habits/habit-card.tsx:125
 #: src/components/habits/habit-card.tsx:177
+#: src/components/workouts/routine-card.tsx:168
+#: src/components/workouts/routine-card.tsx:219
 msgid "Delete"
 msgstr "Löschen"
+
+#. placeholder {0}: set.setNumber
+#: src/components/workouts/workout-exercise-card.tsx:251
+msgid "Delete set {0}"
+msgstr "Satz {0} löschen"
 
 #: src/components/entry-form.tsx:287
 msgid "Delete this entry?"
@@ -244,20 +414,69 @@ msgstr "Eintrag löschen?"
 msgid "Delete this habit?"
 msgstr "Gewohnheit löschen?"
 
+#: src/components/workouts/routine-card.tsx:202
+msgid "Delete this plan?"
+msgstr "Diesen Plan löschen?"
+
+#: src/components/workouts/routine-form.tsx:174
+msgid "Description (optional)"
+msgstr "Beschreibung (optional)"
+
+#: src/routes/_authed/workouts.active.tsx:302
+msgid "Discard"
+msgstr "Verwerfen"
+
+#: src/components/workouts/start-conflict-dialog.tsx:57
+msgid "Discard and start new"
+msgstr "Verwerfen und neu starten"
+
+#: src/routes/_authed/workouts.active.tsx:288
+msgid "Discard this workout?"
+msgstr "Dieses Workout verwerfen?"
+
+#: src/routes/_authed/workouts.active.tsx:223
+msgid "Discard workout"
+msgstr "Workout verwerfen"
+
 #: src/components/habits/habit-heatmap.tsx:140
 msgid "done"
 msgstr "erledigt"
+
+#: src/components/workouts/exercise-picker.tsx:276
+msgid "Done"
+msgstr "Fertig"
+
+#: src/components/workouts/workout-labels.tsx:51
+msgid "Dumbbell"
+msgstr "Kurzhantel"
 
 #: src/routes/_authed/onboarding.tsx:96
 #: src/routes/_authed/settings.tsx:133
 msgid "e.g. 300"
 msgstr "z. B. 300"
 
+#: src/components/workouts/routine-form.tsx:319
+msgid "e.g. 8-12"
+msgstr "z. B. 8-12"
+
+#: src/components/workouts/routine-form.tsx:182
+msgid "e.g. Chest, shoulders, triceps"
+msgstr "z. B. Brust, Schultern, Trizeps"
+
+#: src/components/workouts/exercise-picker.tsx:291
+msgid "e.g. Hip Thrust"
+msgstr "z. B. Hip Thrust"
+
+#: src/components/workouts/routine-form.tsx:167
+msgid "e.g. Push Day A"
+msgstr "z. B. Push Day A"
+
 #: src/components/habits/habit-sheet.tsx:170
 msgid "e.g. Read for 20 minutes"
 msgstr "z. B. 20 Minuten lesen"
 
 #: src/components/habits/habit-card.tsx:119
+#: src/components/workouts/routine-card.tsx:162
 msgid "Edit"
 msgstr "Bearbeiten"
 
@@ -268,6 +487,10 @@ msgstr "Eintrag bearbeiten"
 #: src/components/habits/habit-sheet.tsx:149
 msgid "Edit habit"
 msgstr "Gewohnheit bearbeiten"
+
+#: src/routes/_authed/workouts.routines.$routineId.edit.tsx:81
+msgid "Edit plan"
+msgstr "Plan bearbeiten"
 
 #: src/routes/_authed/settings.tsx:304
 msgid "Edits apply retroactively across the current cycle."
@@ -286,9 +509,65 @@ msgstr "Gib einen Namen ein und wähle ein Icon für deine Gewohnheit."
 msgid "Enter a valid amount (e.g. 300 or 1234.50)."
 msgstr "Gib einen gültigen Betrag ein (z. B. 300 oder 1234,50)."
 
+#: src/components/workouts/exercise-picker.tsx:326
+msgid "Equipment"
+msgstr "Equipment"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:130
+msgid "Est. 1RM"
+msgstr "Gesch. 1RM"
+
 #: src/routes/_authed/settings.tsx:233
 msgid "EUR — Euro"
 msgstr "EUR — Euro"
+
+#: src/routes/_authed/workouts.active.tsx:291
+msgid "Everything you logged in this workout will be deleted. This can't be undone."
+msgstr "Alles, was du in diesem Workout protokolliert hast, wird gelöscht. Das kann nicht rückgängig gemacht werden."
+
+#: src/components/workouts/exercise-picker.tsx:130
+msgid "Exercise created and added"
+msgstr "Übung erstellt und hinzugefügt"
+
+#: src/i18n/use-error-message.ts:66
+msgid "Exercise name can't be empty."
+msgstr "Der Übungsname darf nicht leer sein."
+
+#: src/i18n/use-error-message.ts:68
+msgid "Exercise name must be 80 characters or fewer."
+msgstr "Der Übungsname darf höchstens 80 Zeichen lang sein."
+
+#: src/components/workouts/workout-exercise-card.tsx:130
+msgid "Exercise options"
+msgstr "Übungsoptionen"
+
+#: src/components/workouts/routine-form.tsx:194
+msgid "Exercises"
+msgstr "Übungen"
+
+#: src/routes/_authed/workouts.active.tsx:274
+msgid "Finish"
+msgstr "Abschließen"
+
+#: src/routes/_authed/workouts.active.tsx:211
+msgid "Finish workout"
+msgstr "Workout abschließen"
+
+#: src/routes/_authed/workouts.active.tsx:255
+msgid "Finish workout?"
+msgstr "Workout abschließen?"
+
+#: src/routes/_authed/workouts.history.index.tsx:69
+msgid "Finish your first workout and it will show up here."
+msgstr "Schließe dein erstes Workout ab und es erscheint hier."
+
+#: src/routes/_authed/workouts.index.tsx:231
+msgid "Finished workouts will show up here."
+msgstr "Abgeschlossene Workouts erscheinen hier."
+
+#: src/routes/_authed/workouts.index.tsx:86
+msgid "Freestyle workout"
+msgstr "Freies Workout"
 
 #: src/routes/_authed/settings.tsx:235
 msgid "GBP — British Pound"
@@ -318,8 +597,8 @@ msgstr "Gewohnheitsoptionen"
 msgid "Habit updated"
 msgstr "Gewohnheit aktualisiert"
 
-#: src/components/bottom-nav.tsx:65
-#: src/components/bottom-nav.tsx:66
+#: src/components/bottom-nav.tsx:77
+#: src/components/bottom-nav.tsx:78
 #: src/routes/_authed/habits.tsx:56
 #: src/routes/_authed/habits.tsx:94
 msgid "Habits"
@@ -329,14 +608,14 @@ msgstr "Gewohnheiten"
 msgid "Hi, {email}"
 msgstr "Hallo, {email}"
 
-#: src/components/bottom-nav.tsx:58
-#: src/components/bottom-nav.tsx:59
+#: src/components/bottom-nav.tsx:70
+#: src/components/bottom-nav.tsx:71
 #: src/routes/_authed/history.tsx:62
 msgid "History"
 msgstr "Verlauf"
 
-#: src/components/bottom-nav.tsx:44
-#: src/components/bottom-nav.tsx:45
+#: src/components/bottom-nav.tsx:56
+#: src/components/bottom-nav.tsx:57
 msgid "Home"
 msgstr "Start"
 
@@ -353,9 +632,13 @@ msgstr "Ideales Tempo"
 msgid "If a month doesn't have your day (e.g. 31 in February), the cycle starts on the last day of that month instead."
 msgstr "Wenn ein Monat deinen Tag nicht hat (z. B. 31 im Februar), beginnt der Zyklus am letzten Tag des Monats."
 
-#: src/i18n/use-error-message.ts:66
+#: src/i18n/use-error-message.ts:94
 msgid "Invalid email or password."
 msgstr "E-Mail-Adresse oder Passwort ist ungültig."
+
+#: src/components/workouts/workout-exercise-card.tsx:169
+msgid "kg"
+msgstr "kg"
 
 #: src/routes/_authed/settings.tsx:200
 msgid "Language"
@@ -365,9 +648,18 @@ msgstr "Sprache"
 msgid "Language & currency"
 msgstr "Sprache & Währung"
 
+#: src/components/workouts/workout-labels.tsx:44
+msgid "Legs"
+msgstr "Beine"
+
+#: src/routes/_authed/workouts.history.index.tsx:89
+msgid "Load more"
+msgstr "Mehr laden"
+
 #: src/routes/_authed/dashboard.tsx:67
 #: src/routes/_authed/index.tsx:78
 #: src/routes/_authed/settings.tsx:319
+#: src/routes/_authed/workouts.history.index.tsx:87
 msgid "Loading…"
 msgstr "Lädt…"
 
@@ -392,6 +684,10 @@ msgstr "Anmelden"
 msgid "Log out"
 msgstr "Abmelden"
 
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:145
+msgid "Log this exercise in a workout to start tracking progress."
+msgstr "Logge diese Übung in einem Workout, um deinen Fortschritt zu verfolgen."
+
 #: src/components/spend-sheet.tsx:77
 msgid "Logged {magnitudeLabel}"
 msgstr "{magnitudeLabel} erfasst"
@@ -404,9 +700,23 @@ msgstr "Anmeldung läuft…"
 msgid "Logging out…"
 msgstr "Abmeldung läuft…"
 
+#: src/components/workouts/workout-labels.tsx:53
+msgid "Machine"
+msgstr "Maschine"
+
 #: src/components/habits/today-checklist.tsx:66
 msgid "Mark {name} done today"
 msgstr "{name} heute als erledigt markieren"
+
+#. placeholder {0}: set.setNumber
+#: src/components/workouts/workout-exercise-card.tsx:235
+msgid "Mark set {0} as done"
+msgstr "Satz {0} als erledigt markieren"
+
+#. placeholder {0}: set.setNumber
+#: src/components/workouts/workout-exercise-card.tsx:234
+msgid "Mark set {0} as not done"
+msgstr "Satz {0} als nicht erledigt markieren"
 
 #: src/routes/_authed/onboarding.tsx:89
 #: src/routes/_authed/settings.tsx:126
@@ -421,7 +731,21 @@ msgstr "Monatliche Gesamtbeträge"
 msgid "More than last cycle so far"
 msgstr "Mehr als letzten Monat bisher"
 
+#: src/components/workouts/routine-form.tsx:244
+msgid "Move down"
+msgstr "Nach unten verschieben"
+
+#: src/components/workouts/routine-form.tsx:229
+msgid "Move up"
+msgstr "Nach oben verschieben"
+
+#: src/components/workouts/exercise-picker.tsx:300
+msgid "Muscle group"
+msgstr "Muskelgruppe"
+
 #: src/components/habits/habit-sheet.tsx:166
+#: src/components/workouts/exercise-picker.tsx:285
+#: src/components/workouts/routine-form.tsx:159
 msgid "Name"
 msgstr "Name"
 
@@ -433,17 +757,39 @@ msgstr "Nettoausgaben vs. gleichmäßiges Tagestempo"
 msgid "Net total per cycle vs. your monthly budget (the dashed line)."
 msgstr "Nettosumme pro Monat vs. dein Monatsbudget (gestrichelte Linie)."
 
+#: src/components/workouts/exercise-picker.tsx:154
+msgid "New custom exercise"
+msgstr "Neue eigene Übung"
+
 #: src/components/habits/habit-sheet.tsx:149
 msgid "New habit"
 msgstr "Neue Gewohnheit"
+
+#: src/routes/_authed/workouts.index.tsx:180
+#: src/routes/_authed/workouts.index.tsx:197
+#: src/routes/_authed/workouts.routines.new.tsx:51
+msgid "New plan"
+msgstr "Neuer Plan"
 
 #: src/routes/login.tsx:101
 msgid "No account yet? <0>Sign up</0>"
 msgstr "Noch kein Konto? <0>Registrieren</0>"
 
+#: src/components/workouts/exercise-picker.tsx:216
+msgid "No exercises match your search."
+msgstr "Keine Übungen entsprechen deiner Suche."
+
+#: src/routes/_authed/workouts.active.tsx:183
+msgid "No exercises yet — add one to start logging."
+msgstr "Noch keine Übungen — füge eine hinzu, um loszulegen."
+
 #: src/routes/_authed/history.tsx:114
 msgid "No expenses yet this cycle"
 msgstr "Noch keine Ausgaben in diesem Monat"
+
+#: src/routes/_authed/workouts.history.index.tsx:66
+msgid "No finished workouts yet"
+msgstr "Noch keine abgeschlossenen Workouts"
 
 #: src/routes/_authed/habits.tsx:70
 msgid "No habits yet"
@@ -452,6 +798,22 @@ msgstr "Noch keine Gewohnheiten"
 #: src/components/dashboard/biggest-spends.tsx:50
 msgid "No note"
 msgstr "Keine Notiz"
+
+#: src/routes/_authed/workouts.index.tsx:170
+msgid "No plans yet"
+msgstr "Noch keine Pläne"
+
+#: src/components/workouts/routine-form.tsx:126
+msgid "No rest"
+msgstr "Keine Pause"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:142
+msgid "No sessions yet"
+msgstr "Noch keine Einheiten"
+
+#: src/components/workouts/workout-exercise-card.tsx:261
+msgid "No sets — add one below."
+msgstr "Keine Sätze — füge unten einen hinzu."
 
 #: src/components/dashboard/daily-spend-chart.tsx:91
 msgid "No spending yet this cycle."
@@ -481,6 +843,14 @@ msgstr "Auf Kurs, {amount} über Budget abzuschließen."
 msgid "On pace to finish {amount} under budget."
 msgstr "Auf Kurs, {amount} unter Budget abzuschließen."
 
+#: src/components/workouts/routine-form.tsx:280
+msgid "One set fewer"
+msgstr "Ein Satz weniger"
+
+#: src/components/workouts/routine-form.tsx:297
+msgid "One set more"
+msgstr "Ein Satz mehr"
+
 #: src/components/dashboard/daily-spend-chart.tsx:68
 msgid "Over allowance"
 msgstr "Über Tagesbudget"
@@ -498,17 +868,103 @@ msgstr "Tempo diesen Monat"
 msgid "Password"
 msgstr "Passwort"
 
-#: src/i18n/use-error-message.ts:70
+#: src/i18n/use-error-message.ts:98
 msgid "Password must be at least 8 characters."
 msgstr "Das Passwort muss mindestens 8 Zeichen lang sein."
 
-#: src/components/bottom-nav.tsx:72
+#: src/components/workouts/exercise-picker.tsx:312
+msgid "Pick a muscle group"
+msgstr "Muskelgruppe wählen"
+
+#: src/components/workouts/exercise-picker.tsx:338
+msgid "Pick equipment"
+msgstr "Equipment wählen"
+
+#: src/routes/_authed/workouts.routines.new.tsx:62
+msgid "Plan created"
+msgstr "Plan erstellt"
+
+#: src/components/workouts/routine-card.tsx:105
+msgid "Plan deleted"
+msgstr "Plan gelöscht"
+
+#: src/i18n/use-error-message.ts:76
+msgid "Plan name can't be empty."
+msgstr "Der Planname darf nicht leer sein."
+
+#: src/i18n/use-error-message.ts:78
+msgid "Plan name must be 80 characters or fewer."
+msgstr "Der Planname darf höchstens 80 Zeichen lang sein."
+
+#: src/components/workouts/routine-card.tsx:148
+msgid "Plan options"
+msgstr "Plan-Optionen"
+
+#: src/routes/_authed/workouts.routines.$routineId.edit.tsx:96
+msgid "Plan updated"
+msgstr "Plan aktualisiert"
+
+#: src/routes/_authed/workouts.index.tsx:126
+msgid "Plan, log, and track your training."
+msgstr "Plane, protokolliere und verfolge dein Training."
+
+#: src/routes/_authed/workouts.index.tsx:159
+msgid "Plans"
+msgstr "Pläne"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:129
+msgid "PR (heaviest set)"
+msgstr "PR (schwerster Satz)"
+
+#: src/components/workouts/workout-exercise-card.tsx:166
+msgid "Previous"
+msgstr "Zuletzt"
+
+#: src/components/bottom-nav.tsx:91
 msgid "Primary navigation"
 msgstr "Hauptnavigation"
 
 #: src/routes/_authed/index.tsx:160
 msgid "Recent"
 msgstr "Zuletzt"
+
+#: src/routes/_authed/workouts.index.tsx:218
+msgid "Recent workouts"
+msgstr "Letzte Workouts"
+
+#: src/components/workouts/routine-form.tsx:258
+#: src/components/workouts/workout-exercise-card.tsx:154
+msgid "Remove exercise"
+msgstr "Übung entfernen"
+
+#: src/components/workouts/routine-form.tsx:311
+#: src/components/workouts/workout-exercise-card.tsx:172
+msgid "Reps"
+msgstr "Wdh."
+
+#. placeholder {0}: set.setNumber
+#: src/components/workouts/workout-exercise-card.tsx:221
+msgid "Reps, set {0}"
+msgstr "Wiederholungen, Satz {0}"
+
+#: src/components/workouts/rest-timer-bar.tsx:55
+#: src/components/workouts/routine-form.tsx:329
+msgid "Rest"
+msgstr "Pause"
+
+#. placeholder {0}: formatDuration(exercise.restSeconds)
+#: src/components/workouts/workout-exercise-card.tsx:121
+msgid "Rest {0}"
+msgstr "Pause {0}"
+
+#: src/components/workouts/start-conflict-dialog.tsx:60
+#: src/routes/_authed/workouts.index.tsx:149
+msgid "Resume"
+msgstr "Fortsetzen"
+
+#: src/components/workouts/start-conflict-dialog.tsx:46
+msgid "Resume it, or discard it and start this one instead. Discarding deletes everything you logged in the running workout."
+msgstr "Setze es fort oder verwirf es und starte stattdessen dieses. Beim Verwerfen wird alles gelöscht, was du im laufenden Workout protokolliert hast."
 
 #: src/components/expense-row.tsx:215
 #: src/routes/_authed/settings.tsx:167
@@ -520,6 +976,7 @@ msgid "Save and continue"
 msgstr "Speichern und weiter"
 
 #: src/components/habits/habit-sheet.tsx:150
+#: src/routes/_authed/workouts.routines.$routineId.edit.tsx:88
 msgid "Save changes"
 msgstr "Änderungen speichern"
 
@@ -528,12 +985,34 @@ msgstr "Änderungen speichern"
 #: src/components/spend-sheet.tsx:141
 #: src/routes/_authed/onboarding.tsx:131
 #: src/routes/_authed/settings.tsx:167
+#: src/routes/_authed/workouts.routines.$routineId.edit.tsx:89
 msgid "Saving…"
 msgstr "Wird gespeichert…"
+
+#: src/components/workouts/exercise-picker.tsx:177
+#: src/components/workouts/exercise-picker.tsx:179
+msgid "Search exercises"
+msgstr "Übungen suchen"
+
+#: src/components/workouts/exercise-picker.tsx:160
+msgid "Search the exercise library or create a custom exercise."
+msgstr "Durchsuche die Übungsbibliothek oder erstelle eine eigene Übung."
 
 #: src/routes/_authed/index.tsx:163
 msgid "See all"
 msgstr "Alle anzeigen"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:160
+msgid "Session volume"
+msgstr "Volumen pro Einheit"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:171
+msgid "Sessions"
+msgstr "Einheiten"
+
+#: src/components/workouts/workout-exercise-card.tsx:163
+msgid "Set"
+msgstr "Satz"
 
 #: src/components/expense-row.tsx:102
 msgid "Set aside"
@@ -547,17 +1026,29 @@ msgstr "{magnitudeLabel} zurückgelegt"
 msgid "Set up your budget"
 msgstr "Richte dein Budget ein"
 
-#: src/routes/_authed.tsx:110
+#: src/components/workouts/routine-form.tsx:267
+msgid "Sets"
+msgstr "Sätze"
+
+#: src/routes/_authed.tsx:118
 #: src/routes/_authed/settings.tsx:288
 msgid "Settings"
 msgstr "Einstellungen"
+
+#: src/components/workouts/workout-labels.tsx:45
+msgid "Shoulders"
+msgstr "Schultern"
 
 #: src/routes/signup.tsx:63
 #: src/routes/signup.tsx:108
 msgid "Sign up"
 msgstr "Registrieren"
 
-#: src/i18n/use-error-message.ts:74
+#: src/components/workouts/rest-timer-bar.tsx:74
+msgid "Skip"
+msgstr "Überspringen"
+
+#: src/i18n/use-error-message.ts:102
 msgid "Something went wrong. Check your connection and try again."
 msgstr "Etwas ist schiefgelaufen. Überprüfe deine Verbindung und versuche es erneut."
 
@@ -582,6 +1073,14 @@ msgstr "Ausgegeben (netto)"
 msgid "Spent this cycle"
 msgstr "Diese Periode ausgegeben"
 
+#: src/components/workouts/routine-card.tsx:181
+msgid "Start"
+msgstr "Starten"
+
+#: src/routes/_authed/workouts.index.tsx:211
+msgid "Start empty workout"
+msgstr "Leeres Workout starten"
+
 #: src/components/habits/habit-heatmap.tsx:143
 msgid "tap to mark done"
 msgstr "tippen zum Markieren als erledigt"
@@ -594,6 +1093,10 @@ msgstr "tippen zum Aufheben"
 msgid "Tell us your monthly amount and which day of the month your cycle starts."
 msgstr "Gib deinen monatlichen Betrag und den Tag an, an dem dein Zyklus beginnt."
 
+#: src/i18n/use-error-message.ts:72
+msgid "That exercise doesn't exist anymore. Refresh and try again."
+msgstr "Diese Übung existiert nicht mehr. Lade neu und versuch es erneut."
+
 #: src/components/entry-form.tsx:290
 msgid "This can't be undone and your daily and monthly numbers will update."
 msgstr "Das lässt sich nicht rückgängig machen und deine Tages- und Monatszahlen werden aktualisiert."
@@ -605,6 +1108,14 @@ msgstr "Dieser Monat auf einen Blick"
 #: src/routes/_authed/history.tsx:65
 msgid "This cycle's expenses"
 msgstr "Ausgaben dieses Monats"
+
+#: src/i18n/use-error-message.ts:82
+msgid "This plan doesn't exist anymore."
+msgstr "Dieser Plan existiert nicht mehr."
+
+#: src/i18n/use-error-message.ts:88
+msgid "This workout doesn't exist anymore."
+msgstr "Dieses Workout existiert nicht mehr."
 
 #: src/components/expense-row.tsx:75
 msgid "today"
@@ -636,13 +1147,65 @@ msgstr "Rückgängig"
 msgid "USD — US Dollar"
 msgstr "USD — US-Dollar"
 
+#: src/components/workouts/workout-exercise-card.tsx:142
+msgid "View progress"
+msgstr "Fortschritt ansehen"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:161
+msgid "Volume"
+msgstr "Volumen"
+
+#. placeholder {0}: formatKg(session.volumeGrams)
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:194
+msgid "Volume {0} kg"
+msgstr "Volumen {0} kg"
+
+#. placeholder {0}: set.setNumber
+#: src/components/workouts/workout-exercise-card.tsx:209
+msgid "Weight in kilograms, set {0}"
+msgstr "Gewicht in Kilogramm, Satz {0}"
+
 #: src/routes/login.tsx:59
 msgid "Welcome back. Enter your details to continue."
 msgstr "Willkommen zurück. Gib deine Daten ein, um fortzufahren."
 
+#: src/routes/_authed/workouts.active.tsx:134
+msgid "Workout discarded"
+msgstr "Workout verworfen"
+
+#: src/routes/_authed/workouts.history.index.tsx:53
+msgid "Workout history"
+msgstr "Workout-Verlauf"
+
+#: src/routes/_authed/workouts.index.tsx:137
+msgid "Workout in progress"
+msgstr "Workout läuft"
+
+#: src/routes/_authed/workouts.active.tsx:112
+msgid "Workout saved"
+msgstr "Workout gespeichert"
+
+#: src/components/bottom-nav.tsx:84
+#: src/components/bottom-nav.tsx:85
+#: src/routes/_authed/workouts.index.tsx:123
+msgid "Workouts"
+msgstr "Workouts"
+
+#: src/components/workouts/routine-card.tsx:205
+msgid "Workouts you already logged with this plan are kept. This can't be undone."
+msgstr "Bereits aufgezeichnete Workouts mit diesem Plan bleiben erhalten. Das kann nicht rückgängig gemacht werden."
+
 #: src/components/expense-row.tsx:77
 msgid "yesterday"
 msgstr "gestern"
+
+#: src/i18n/use-error-message.ts:86
+msgid "You already have a workout in progress."
+msgstr "Du hast bereits ein Workout am Laufen."
+
+#: src/components/workouts/start-conflict-dialog.tsx:43
+msgid "You have a workout in progress"
+msgstr "Du hast ein laufendes Workout"
 
 #: src/components/dashboard/monthly-trend-chart.tsx:138
 msgid "Your monthly trend will appear once you've completed a couple of cycles."

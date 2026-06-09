@@ -27,6 +27,9 @@ model User {
   budget        Budget?
   expenses      Expense[]
   habits        Habit[]
+  exercises     Exercise[]
+  routines      Routine[]
+  workouts      Workout[]
 
   @@map("user")
 }
@@ -109,6 +112,132 @@ model HabitCompletion {
   @@unique([habitId, day])
   @@map("habit_completion")
 }
+
+// ─── Workout Tracker ──────────────────────────────────────────────────────────
+
+// Built-in exercises have userId = null (seeded via prisma/seed.ts). Custom
+// exercises created by a user carry their userId. The @@unique([userId, name])
+// constraint allows two different users to create exercises with the same name,
+// while preventing one user from having two exercises with the same name. A
+// built-in exercise's name is globally unique among built-ins (userId = null,
+// enforced at the application level in seed.ts).
+model Exercise {
+  id               String            @id @default(cuid())
+  userId           String?
+  user             User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  muscleGroup      MuscleGroup
+  equipment        Equipment
+  createdAt        DateTime          @default(now())
+  routineExercises RoutineExercise[]
+  workoutExercises WorkoutExercise[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("exercise")
+}
+
+// A saved workout plan the user can start from. Contains an ordered list of
+// exercises with target sets, reps, and rest time.
+model Routine {
+  id          String            @id @default(cuid())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  exercises   RoutineExercise[]
+  workouts    Workout[]
+
+  @@index([userId, createdAt])
+  @@map("routine")
+}
+
+// Ordered exercise entry in a routine template. Stores target parameters for
+// guidance during logging. Deleting an exercise that is used in a routine is
+// blocked by the Restrict onDelete.
+model RoutineExercise {
+  id          String   @id @default(cuid())
+  routineId   String
+  routine     Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  exerciseId  String
+  exercise    Exercise @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  position    Int
+  targetSets  Int
+  targetReps  String
+  restSeconds Int      @default(120)
+
+  @@map("routine_exercise")
+}
+
+// A single workout session. `finishedAt = null` means the workout is in
+// progress. At most one active workout per user (enforced at the application
+// layer). If the source routine is deleted, routineId is set to null.
+model Workout {
+  id         String            @id @default(cuid())
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routineId  String?
+  routine    Routine?          @relation(fields: [routineId], references: [id], onDelete: SetNull)
+  name       String
+  startedAt  DateTime          @default(now())
+  finishedAt DateTime?
+  exercises  WorkoutExercise[]
+
+  @@index([userId, startedAt])
+  @@index([userId, finishedAt])
+  @@map("workout")
+}
+
+// Ordered exercise entry in a live or completed workout. Stores the actual rest
+// time used. Deleting an exercise that has been logged is blocked (Restrict).
+model WorkoutExercise {
+  id          String       @id @default(cuid())
+  workoutId   String
+  workout     Workout      @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  exerciseId  String
+  exercise    Exercise     @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  position    Int
+  restSeconds Int          @default(120)
+  sets        WorkoutSet[]
+
+  @@map("workout_exercise")
+}
+
+// A single set logged during a workout. weightGrams is null for bodyweight
+// exercises. completed + completedAt are set when the user checks off the set.
+model WorkoutSet {
+  id                String          @id @default(cuid())
+  workoutExerciseId String
+  workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+  setNumber         Int
+  weightGrams       Int?
+  reps              Int?
+  completed         Boolean         @default(false)
+  completedAt       DateTime?
+
+  @@map("workout_set")
+}
+
+enum MuscleGroup {
+  CHEST
+  BACK
+  LEGS
+  SHOULDERS
+  ARMS
+  CORE
+}
+
+enum Equipment {
+  BARBELL
+  DUMBBELL
+  CABLE
+  MACHINE
+  BODYWEIGHT
+}
+
+// ─── End Workout Tracker ──────────────────────────────────────────────────────
 
 model Session {
   id        String   @id

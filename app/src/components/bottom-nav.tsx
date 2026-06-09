@@ -2,7 +2,8 @@
  * BottomNav — the persistent tab bar for authenticated screens.
  *
  * Rendered once by the `_authed` layout so it appears on every authed page
- * (Home / Dashboard / History / Habits) without each route re-declaring it.
+ * (Home / Dashboard / History / Habits / Workouts) without each route
+ * re-declaring it.
  * It's a `fixed bottom-0` bar; the layout pads its content with `pb-16` so
  * nothing hides behind it, and the FAB (in `SpendSheet`) sits above it.
  *
@@ -17,12 +18,23 @@
  * Labels are wrapped in `<Trans>` so Lingui can translate them and extract
  * them into message catalogs. The icon's `aria-label` mirrors the translated
  * label text via the same `<Trans>`.
+ *
+ * Five tabs is the iOS tab-bar maximum, so labels use the native iOS tab
+ * label size (`text-[10px]`, icon stays `size-5`) and the label span is
+ * overflow-safe (`min-w-0` + `truncate max-w-full px-0.5`) so long German
+ * labels ("Gewohnheiten") can never break the layout.
  */
 
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
-import { CalendarCheck, Clock, Home, LayoutDashboard } from "lucide-react";
+import {
+	CalendarCheck,
+	Clock,
+	Dumbbell,
+	Home,
+	LayoutDashboard,
+} from "lucide-react";
 import { cn } from "#/lib/utils";
 
 interface NavTab {
@@ -65,6 +77,13 @@ export function BottomNav() {
 			label: <Trans>Habits</Trans>,
 			ariaLabel: t`Habits`,
 		},
+		{
+			to: "/workouts",
+			icon: Dumbbell,
+			exact: false,
+			label: <Trans>Workouts</Trans>,
+			ariaLabel: t`Workouts`,
+		},
 	];
 
 	return (
@@ -82,7 +101,7 @@ export function BottomNav() {
 							<Link
 								to={tab.to}
 								activeOptions={{ exact: tab.exact }}
-								className="flex flex-col items-center gap-1 py-2 text-muted-foreground text-xs transition-colors data-[status=active]:text-foreground"
+								className="flex min-w-0 flex-col items-center gap-1 py-2 text-[10px] text-muted-foreground transition-colors data-[status=active]:text-foreground"
 								aria-label={tab.ariaLabel}
 							>
 								{({ isActive }) => (
@@ -91,7 +110,9 @@ export function BottomNav() {
 											className={cn("size-5", isActive && "text-foreground")}
 											aria-hidden="true"
 										/>
-										<span>{tab.label}</span>
+										<span className="max-w-full truncate px-0.5">
+											{tab.label}
+										</span>
 									</>
 								)}
 							</Link>

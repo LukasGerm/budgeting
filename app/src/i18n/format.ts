@@ -41,15 +41,17 @@ export function formatMoney(
 // Date formatting
 // ---------------------------------------------------------------------------
 
-export type DateFormatStyle = "long" | "short" | "numeric";
+export type DateFormatStyle = "long" | "short" | "numeric" | "dayMonth";
 
 /**
  * Format a date according to the active locale.
  *
  * Styles:
- *   "long"    → weekday + day + month (e.g. "Saturday, 31 May" / "Samstag, 31. Mai")
- *   "short"   → short month abbrev (e.g. "May" / "Mai")
- *   "numeric" → day/month/year numerics (e.g. "31/05/2025" / "31.05.2025")
+ *   "long"     → weekday + day + month (e.g. "Saturday, 31 May" / "Samstag, 31. Mai")
+ *   "short"    → short month abbrev (e.g. "May" / "Mai")
+ *   "numeric"  → day/month/year numerics (e.g. "31/05/2025" / "31.05.2025")
+ *   "dayMonth" → day + short month (e.g. "31 May" / "31. Mai") — compact
+ *                axis/list labels where the year is implied
  */
 export function formatDate(
 	date: Date,
@@ -73,6 +75,11 @@ export function formatDate(
 				day: "2-digit",
 				month: "2-digit",
 				year: "numeric",
+			}).format(date);
+		case "dayMonth":
+			return new Intl.DateTimeFormat(intlLocale, {
+				day: "numeric",
+				month: "short",
 			}).format(date);
 	}
 }

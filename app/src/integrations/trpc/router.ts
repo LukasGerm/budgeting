@@ -1,16 +1,22 @@
 import { setCookie } from "@tanstack/react-start/server";
 import type { TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { HABIT_ICON_NAMES } from "#/components/habits/habit-icons";
 import { prisma } from "#/db";
 import {
+	bestEpley1RmGrams,
+	bestSet,
 	getCurrentCycle,
 	getRecentCycles,
 	HABIT_COLOR_PALETTE,
+	MAX_REPS,
+	MAX_WEIGHT_GRAMS,
 	pickHabitColor,
 	STREAK_WINDOW_DAYS,
+	workoutVolumeGrams,
 } from "#/domain";
-import { EntryKind } from "#/generated/prisma/enums";
+import { EntryKind, Equipment, MuscleGroup } from "#/generated/prisma/enums";
 import {
 	CURRENCY_COOKIE,
 	LOCALE_COOKIE,
@@ -477,6 +483,959 @@ const habitRouter = {
 } satisfies TRPCRouterRecord;
 
 /**
+ * Exercise procedures — the workout tracker's exercise library.
+ *
+ * Two kinds of rows share the `exercise` table: built-ins (`userId = null`,
+ * seeded from `prisma/seed.ts`, readable by everyone, writable by no one) and
+ * the caller's custom exercises (`userId = ctx.userId`). `list` returns both;
+ * `create` always writes a custom row pinned to the caller.
+ *
+ * Exercise names are NOT translated (PRD locked decision): they're data, not
+ * UI chrome — the wire `name` is rendered verbatim.
+ */
+const exerciseRouter = {
+	/**
+	 * All exercises visible to the caller: built-ins + own customs, ordered by
+	 * muscle group (enum declaration order: CHEST → BACK → LEGS → SHOULDERS →
+	 * ARMS → CORE, Postgres orders enums by declaration), then name.
+	 */
+	list: protectedProcedure.query(async ({ ctx }) => {
+		const rows = await prisma.exercise.findMany({
+			where: { OR: [{ userId: null }, { userId: ctx.userId }] },
+			orderBy: [{ muscleGroup: "asc" }, { name: "asc" }],
+		});
+		return rows.map((row) => ({
+			id: row.id,
+			name: row.name,
+			muscleGroup: row.muscleGroup,
+			equipment: row.equipment,
+			/** True for the caller's own custom exercises, false for built-ins. */
+			isCustom: row.userId !== null,
+		}));
+	}),
+
+	/**
+	 * Create a custom exercise for the caller. The name must be unique across
+	 * everything the caller can see (built-ins + own customs, case-insensitive)
+	 * so the library never shows two entries with the same name; a clash throws
+	 * CONFLICT with the typed `EXERCISE_NAME_TAKEN` code.
+	 */
+	create: protectedProcedure
+		.input(
+			z.object({
+				name: z
+					.string()
+					.trim()
+					.min(1, "EXERCISE_NAME_REQUIRED")
+					.max(80, "EXERCISE_NAME_TOO_LONG"),
+				muscleGroup: z.enum(MuscleGroup),
+				equipment: z.enum(Equipment),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			// Uniqueness gate across the caller's visible library. The DB's
+			// @@unique([userId, name]) only covers exact-case dupes within one
+			// userId (and not built-ins, since NULLs are distinct in Postgres
+			// unique indexes), so the user-facing rule lives here.
+			const clash = await prisma.exercise.findFirst({
+				where: {
+					OR: [{ userId: null }, { userId: ctx.userId }],
+					name: { equals: input.name, mode: "insensitive" },
+				},
+				select: { id: true },
+			});
+			if (clash) {
+				throw new TRPCError({
+					code: "CONFLICT",
+					message: "EXERCISE_NAME_TAKEN",
+				});
+			}
+
+			const row = await prisma.exercise.create({
+				data: {
+					userId: ctx.userId,
+					name: input.name,
+					muscleGroup: input.muscleGroup,
+					equipment: input.equipment,
+				},
+			});
+			return {
+				id: row.id,
+				name: row.name,
+				muscleGroup: row.muscleGroup,
+				equipment: row.equipment,
+				isCustom: true,
+			};
+		}),
+} satisfies TRPCRouterRecord;
+
+/**
+ * Shared shape of one routine-exercise entry as the client sends it.
+ * The array index is the position — the server writes `position: index`,
+ * so the wire carries no explicit position field.
+ */
+const routineExerciseInput = z.object({
+	exerciseId: z.string(),
+	targetSets: z.number().int().min(1).max(12),
+	/** Free-text rep target, e.g. "8-12" or "5". */
+	targetReps: z.string().trim().min(1).max(20),
+	restSeconds: z.number().int().min(0).max(600),
+});
+
+/** Shared create/update payload fields for a routine. */
+const routineFields = {
+	name: z
+		.string()
+		.trim()
+		.min(1, "ROUTINE_NAME_REQUIRED")
+		.max(80, "ROUTINE_NAME_TOO_LONG"),
+	description: z.string().trim().max(280, "NOTE_TOO_LONG").optional(),
+	exercises: z
+		.array(routineExerciseInput)
+		.min(1, "ROUTINE_NO_EXERCISES")
+		.max(20),
+};
+
+/**
+ * Ownership/visibility gate for routine writes: every referenced exercise must
+ * be visible to the caller (built-in `userId = null` or the caller's own
+ * custom). Without this, a caller could attach another user's custom exercise
+ * to their routine by guessing its id.
+ */
+async function assertExercisesVisible(
+	userId: string,
+	exerciseIds: string[],
+): Promise<void> {
+	const unique = [...new Set(exerciseIds)];
+	const visible = await prisma.exercise.count({
+		where: {
+			id: { in: unique },
+			OR: [{ userId: null }, { userId }],
+		},
+	});
+	if (visible !== unique.length) {
+		throw new TRPCError({ code: "NOT_FOUND", message: "EXERCISE_NOT_FOUND" });
+	}
+}
+
+/**
+ * Routine procedures — reusable workout plans, scoped to the caller.
+ *
+ * `create`/`update` take the full ordered exercise array; the array index
+ * becomes `RoutineExercise.position`. `update` replaces the exercise rows
+ * wholesale (nested `deleteMany` + `create` inside one `update` call, which
+ * Prisma runs in a single transaction) — safe because nothing references
+ * `RoutineExercise` rows: workouts copy values at start time and
+ * `Workout.routineId` is `SetNull` on routine delete.
+ */
+const routineRouter = {
+	/**
+	 * The caller's routines, newest first, each with a display summary:
+	 * exercise names in position order, exercise count, and the total number
+	 * of target sets across all exercises.
+	 */
+	list: protectedProcedure.query(async ({ ctx }) => {
+		const rows = await prisma.routine.findMany({
+			where: { userId: ctx.userId },
+			orderBy: { createdAt: "desc" },
+			include: {
+				exercises: {
+					orderBy: { position: "asc" },
+					include: { exercise: { select: { name: true } } },
+				},
+			},
+		});
+		return rows.map((row) => ({
+			id: row.id,
+			name: row.name,
+			description: row.description,
+			/** Exercise names in position order — for the card preview line. */
+			exerciseNames: row.exercises.map((e) => e.exercise.name),
+			exerciseCount: row.exercises.length,
+			totalTargetSets: row.exercises.reduce((sum, e) => sum + e.targetSets, 0),
+		}));
+	}),
+
+	/**
+	 * Full routine detail for the edit screen: ordered exercises with the
+	 * library data (name/muscleGroup/equipment) joined in. NOT_FOUND with the
+	 * typed `ROUTINE_NOT_FOUND` code when the routine isn't the caller's.
+	 */
+	get: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const row = await prisma.routine.findFirst({
+				where: { id: input.id, userId: ctx.userId },
+				include: {
+					exercises: {
+						orderBy: { position: "asc" },
+						include: { exercise: true },
+					},
+				},
+			});
+			if (!row) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "ROUTINE_NOT_FOUND",
+				});
+			}
+			return {
+				id: row.id,
+				name: row.name,
+				description: row.description,
+				exercises: row.exercises.map((e) => ({
+					exerciseId: e.exerciseId,
+					name: e.exercise.name,
+					muscleGroup: e.exercise.muscleGroup,
+					equipment: e.exercise.equipment,
+					targetSets: e.targetSets,
+					targetReps: e.targetReps,
+					restSeconds: e.restSeconds,
+				})),
+			};
+		}),
+
+	/**
+	 * Create a routine with its ordered exercises in one atomic nested write.
+	 * Returns the new routine's id so the client can navigate or invalidate.
+	 */
+	create: protectedProcedure
+		.input(z.object(routineFields))
+		.mutation(async ({ ctx, input }) => {
+			await assertExercisesVisible(
+				ctx.userId,
+				input.exercises.map((e) => e.exerciseId),
+			);
+			const row = await prisma.routine.create({
+				data: {
+					userId: ctx.userId,
+					name: input.name,
+					description:
+						input.description && input.description.length > 0
+							? input.description
+							: null,
+					exercises: {
+						create: input.exercises.map((e, index) => ({
+							exerciseId: e.exerciseId,
+							position: index,
+							targetSets: e.targetSets,
+							targetReps: e.targetReps,
+							restSeconds: e.restSeconds,
+						})),
+					},
+				},
+			});
+			return { id: row.id };
+		}),
+
+	/**
+	 * Replace a routine's fields and its full exercise list. Ownership is
+	 * checked up front (NOT_FOUND for another user's routine); the nested
+	 * `deleteMany` + `create` runs inside the single `update` statement, so the
+	 * replacement is transactional.
+	 */
+	update: protectedProcedure
+		.input(z.object({ id: z.string(), ...routineFields }))
+		.mutation(async ({ ctx, input }) => {
+			const owned = await prisma.routine.findFirst({
+				where: { id: input.id, userId: ctx.userId },
+				select: { id: true },
+			});
+			if (!owned) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "ROUTINE_NOT_FOUND",
+				});
+			}
+			await assertExercisesVisible(
+				ctx.userId,
+				input.exercises.map((e) => e.exerciseId),
+			);
+			await prisma.routine.update({
+				where: { id: input.id },
+				data: {
+					name: input.name,
+					description:
+						input.description && input.description.length > 0
+							? input.description
+							: null,
+					exercises: {
+						deleteMany: {},
+						create: input.exercises.map((e, index) => ({
+							exerciseId: e.exerciseId,
+							position: index,
+							targetSets: e.targetSets,
+							targetReps: e.targetReps,
+							restSeconds: e.restSeconds,
+						})),
+					},
+				},
+			});
+		}),
+
+	/**
+	 * Hard-delete a caller-owned routine. `RoutineExercise` rows cascade;
+	 * `Workout.routineId` is `SetNull`, so past workouts survive. Pinned to
+	 * `id` + `userId` so another user's routine is a no-op, not an error.
+	 */
+	delete: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			await prisma.routine.deleteMany({
+				where: { id: input.id, userId: ctx.userId },
+			});
+		}),
+} satisfies TRPCRouterRecord;
+
+/**
+ * Per-set values from the most recent finished workout, keyed by
+ * exerciseId → setNumber. Drives the "last time: 80 kg × 8" hints and the
+ * prefill on `start`/`addExercise` (PRD locked decision 9).
+ */
+type PreviousSetMap = Map<
+	string,
+	Map<number, { weightGrams: number | null; reps: number | null }>
+>;
+
+/**
+ * For each exercise id, load the sets of the caller's most recent *finished*
+ * workout containing that exercise. Only completed sets count (finish deletes
+ * incomplete ones anyway; the filter guards legacy/edge rows). One small query
+ * per exercise — a workout holds at most ~20, so no N+1 concern at this scale.
+ */
+async function previousSetsByExercise(
+	userId: string,
+	exerciseIds: string[],
+): Promise<PreviousSetMap> {
+	const unique = [...new Set(exerciseIds)];
+	const entries = await Promise.all(
+		unique.map(async (exerciseId) => {
+			const last = await prisma.workoutExercise.findFirst({
+				where: { exerciseId, workout: { userId, finishedAt: { not: null } } },
+				orderBy: { workout: { finishedAt: "desc" } },
+				include: {
+					sets: { where: { completed: true }, orderBy: { setNumber: "asc" } },
+				},
+			});
+			if (!last) return null;
+			const bySetNumber = new Map(
+				last.sets.map((s) => [
+					s.setNumber,
+					{ weightGrams: s.weightGrams, reps: s.reps },
+				]),
+			);
+			return [exerciseId, bySetNumber] as const;
+		}),
+	);
+	return new Map(entries.filter((e) => e !== null));
+}
+
+/** How many sets a freshly added (non-routine) exercise starts with. */
+const DEFAULT_SET_COUNT = 3;
+/** Page size of `workout.history` (cursor pagination). */
+const HISTORY_PAGE_SIZE = 20;
+/** Rest seconds for an exercise added mid-workout (matches the schema default). */
+const DEFAULT_REST_SECONDS = 120;
+
+/**
+ * Workout procedures — live workout logging, scoped to the caller.
+ *
+ * Invariants:
+ * - At most one *active* workout (`finishedAt = null`) per user, enforced in
+ *   `start` (application-level; no DB constraint).
+ * - Every mutation is pinned to `ctx.userId` via relation joins; rows that
+ *   aren't the caller's match nothing and the call is a no-op (the
+ *   `updateMany`/`deleteMany` convention) or a typed NOT_FOUND where the UI
+ *   needs to react.
+ * - Set/exercise mutations only touch the *active* workout (`finishedAt:
+ *   null` in the join) — finished workouts are immutable history.
+ * - Finish semantics (PRD locked decision 8): only completed sets are saved.
+ *   `finish` deletes incomplete sets, drops exercises left with no sets, and
+ *   renumbers the surviving sets 1..n so history (and future previous-set
+ *   matching) sees a dense set list.
+ */
+const workoutRouter = {
+	/**
+	 * The caller's active workout in full detail, or null. Exercises come in
+	 * position order, sets in setNumber order; each set carries `previous` —
+	 * the matching-setNumber set from the most recent finished workout
+	 * containing that exercise (or null).
+	 */
+	active: protectedProcedure.query(async ({ ctx }) => {
+		const row = await prisma.workout.findFirst({
+			where: { userId: ctx.userId, finishedAt: null },
+			include: {
+				exercises: {
+					orderBy: { position: "asc" },
+					include: {
+						exercise: { select: { name: true, muscleGroup: true } },
+						sets: { orderBy: { setNumber: "asc" } },
+					},
+				},
+			},
+		});
+		if (!row) return null;
+
+		const previous = await previousSetsByExercise(
+			ctx.userId,
+			row.exercises.map((e) => e.exerciseId),
+		);
+		return {
+			id: row.id,
+			name: row.name,
+			startedAt: row.startedAt,
+			exercises: row.exercises.map((e) => ({
+				id: e.id,
+				exerciseId: e.exerciseId,
+				name: e.exercise.name,
+				muscleGroup: e.exercise.muscleGroup,
+				position: e.position,
+				restSeconds: e.restSeconds,
+				sets: e.sets.map((s) => ({
+					id: s.id,
+					setNumber: s.setNumber,
+					weightGrams: s.weightGrams,
+					reps: s.reps,
+					completed: s.completed,
+					/** Last finished session's matching set — null if none. */
+					previous: previous.get(e.exerciseId)?.get(s.setNumber) ?? null,
+				})),
+			})),
+		};
+	}),
+
+	/**
+	 * Start a workout. CONFLICT (`WORKOUT_ALREADY_ACTIVE`) if one is active.
+	 *
+	 * With `routineId`: copies the routine's exercises (position, restSeconds)
+	 * into WorkoutExercise rows and creates `targetSets` WorkoutSet rows each,
+	 * prefilled from the previous finished performance (matching setNumber).
+	 * The workout takes the routine's name. The nested create is one atomic
+	 * statement.
+	 *
+	 * Without: an empty workout named by the client (translated default) or
+	 * "Workout". Returns `{ id }` — the client invalidates `workout.active`
+	 * and navigates; the /workouts/active loader fetches the full shape.
+	 */
+	start: protectedProcedure
+		.input(
+			z.object({
+				routineId: z.string().optional(),
+				/** Display name for an empty workout; ignored when routineId is set. */
+				name: z.string().trim().min(1).max(80).optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const existing = await prisma.workout.findFirst({
+				where: { userId: ctx.userId, finishedAt: null },
+				select: { id: true },
+			});
+			if (existing) {
+				throw new TRPCError({
+					code: "CONFLICT",
+					message: "WORKOUT_ALREADY_ACTIVE",
+				});
+			}
+
+			if (!input.routineId) {
+				const row = await prisma.workout.create({
+					data: { userId: ctx.userId, name: input.name ?? "Workout" },
+				});
+				return { id: row.id };
+			}
+
+			const routine = await prisma.routine.findFirst({
+				where: { id: input.routineId, userId: ctx.userId },
+				include: { exercises: { orderBy: { position: "asc" } } },
+			});
+			if (!routine) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "ROUTINE_NOT_FOUND",
+				});
+			}
+
+			const previous = await previousSetsByExercise(
+				ctx.userId,
+				routine.exercises.map((e) => e.exerciseId),
+			);
+			const row = await prisma.workout.create({
+				data: {
+					userId: ctx.userId,
+					routineId: routine.id,
+					name: routine.name,
+					exercises: {
+						create: routine.exercises.map((e, index) => ({
+							exerciseId: e.exerciseId,
+							position: index,
+							restSeconds: e.restSeconds,
+							sets: {
+								create: Array.from({ length: e.targetSets }, (_, i) => {
+									const prev = previous.get(e.exerciseId)?.get(i + 1);
+									return {
+										setNumber: i + 1,
+										weightGrams: prev?.weightGrams ?? null,
+										reps: prev?.reps ?? null,
+									};
+								}),
+							},
+						})),
+					},
+				},
+			});
+			return { id: row.id };
+		}),
+
+	/**
+	 * Finish the active workout: requires ≥1 completed set (BAD_REQUEST
+	 * `WORKOUT_NO_COMPLETED_SETS` otherwise), stamps `finishedAt`, deletes
+	 * incomplete sets, drops exercises left empty, and renumbers surviving
+	 * sets densely — all in one transaction.
+	 */
+	finish: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const workout = await prisma.workout.findFirst({
+				where: { id: input.id, userId: ctx.userId, finishedAt: null },
+				include: { exercises: { include: { sets: true } } },
+			});
+			if (!workout) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "WORKOUT_NOT_FOUND",
+				});
+			}
+
+			const hasCompleted = workout.exercises.some((e) =>
+				e.sets.some((s) => s.completed),
+			);
+			if (!hasCompleted) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "WORKOUT_NO_COMPLETED_SETS",
+				});
+			}
+
+			await prisma.$transaction(async (tx) => {
+				// Only completed sets are saved (PRD locked decision 8).
+				await tx.workoutSet.deleteMany({
+					where: {
+						workoutExercise: { workoutId: workout.id },
+						completed: false,
+					},
+				});
+				// Exercises whose every set was incomplete are now empty — drop them
+				// so history never shows a zero-set exercise.
+				await tx.workoutExercise.deleteMany({
+					where: { workoutId: workout.id, sets: { none: {} } },
+				});
+				// Renumber the survivors 1..n so previous-set matching and the
+				// history display see a dense list.
+				for (const exercise of workout.exercises) {
+					const kept = exercise.sets
+						.filter((s) => s.completed)
+						.sort((a, b) => a.setNumber - b.setNumber);
+					await Promise.all(
+						kept.flatMap((s, i) =>
+							s.setNumber === i + 1
+								? []
+								: [
+										tx.workoutSet.update({
+											where: { id: s.id },
+											data: { setNumber: i + 1 },
+										}),
+									],
+						),
+					);
+				}
+				await tx.workout.update({
+					where: { id: workout.id },
+					data: { finishedAt: new Date() },
+				});
+			});
+		}),
+
+	/**
+	 * Discard the active workout entirely — the workout row plus its exercises
+	 * and sets (cascade). Pinned to `id` + `userId` + active, so anything else
+	 * is a no-op. Finished workouts can't be discarded (history is immutable).
+	 */
+	discard: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			await prisma.workout.deleteMany({
+				where: { id: input.id, userId: ctx.userId, finishedAt: null },
+			});
+		}),
+
+	/**
+	 * Append an exercise to the active workout at the next position with
+	 * DEFAULT_SET_COUNT sets, prefilled from the previous finished performance.
+	 */
+	addExercise: protectedProcedure
+		.input(z.object({ workoutId: z.string(), exerciseId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const workout = await prisma.workout.findFirst({
+				where: { id: input.workoutId, userId: ctx.userId, finishedAt: null },
+				include: { exercises: { select: { position: true } } },
+			});
+			if (!workout) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "WORKOUT_NOT_FOUND",
+				});
+			}
+			await assertExercisesVisible(ctx.userId, [input.exerciseId]);
+
+			const previous = await previousSetsByExercise(ctx.userId, [
+				input.exerciseId,
+			]);
+			const position =
+				workout.exercises.reduce((max, e) => Math.max(max, e.position), -1) + 1;
+			await prisma.workoutExercise.create({
+				data: {
+					workoutId: workout.id,
+					exerciseId: input.exerciseId,
+					position,
+					restSeconds: DEFAULT_REST_SECONDS,
+					sets: {
+						create: Array.from({ length: DEFAULT_SET_COUNT }, (_, i) => {
+							const prev = previous.get(input.exerciseId)?.get(i + 1);
+							return {
+								setNumber: i + 1,
+								weightGrams: prev?.weightGrams ?? null,
+								reps: prev?.reps ?? null,
+							};
+						}),
+					},
+				},
+			});
+		}),
+
+	/**
+	 * Remove an exercise (and its sets, cascade) from the active workout.
+	 * Ownership pinned via the relation join — another user's row (or a
+	 * finished workout's) matches nothing and the call is a no-op.
+	 */
+	removeExercise: protectedProcedure
+		.input(z.object({ workoutExerciseId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			await prisma.workoutExercise.deleteMany({
+				where: {
+					id: input.workoutExerciseId,
+					workout: { userId: ctx.userId, finishedAt: null },
+				},
+			});
+		}),
+
+	/**
+	 * Append a set to an exercise of the active workout, copying the current
+	 * last set's weight/reps (the usual next-set starting point). No-op when
+	 * the exercise isn't the caller's active workout's.
+	 */
+	addSet: protectedProcedure
+		.input(z.object({ workoutExerciseId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const owner = await prisma.workoutExercise.findFirst({
+				where: {
+					id: input.workoutExerciseId,
+					workout: { userId: ctx.userId, finishedAt: null },
+				},
+				include: { sets: { orderBy: { setNumber: "desc" }, take: 1 } },
+			});
+			if (!owner) return;
+			const last = owner.sets[0];
+			await prisma.workoutSet.create({
+				data: {
+					workoutExerciseId: owner.id,
+					setNumber: (last?.setNumber ?? 0) + 1,
+					weightGrams: last?.weightGrams ?? null,
+					reps: last?.reps ?? null,
+				},
+			});
+		}),
+
+	/**
+	 * Delete a set from the active workout and renumber the exercise's
+	 * remaining sets 1..n transactionally. No-op for rows that aren't the
+	 * caller's active workout's.
+	 */
+	deleteSet: protectedProcedure
+		.input(z.object({ setId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const set = await prisma.workoutSet.findFirst({
+				where: {
+					id: input.setId,
+					workoutExercise: {
+						workout: { userId: ctx.userId, finishedAt: null },
+					},
+				},
+				select: { id: true, workoutExerciseId: true },
+			});
+			if (!set) return;
+
+			await prisma.$transaction(async (tx) => {
+				await tx.workoutSet.delete({ where: { id: set.id } });
+				const remaining = await tx.workoutSet.findMany({
+					where: { workoutExerciseId: set.workoutExerciseId },
+					orderBy: { setNumber: "asc" },
+					select: { id: true, setNumber: true },
+				});
+				await Promise.all(
+					remaining.flatMap((s, i) =>
+						s.setNumber === i + 1
+							? []
+							: [
+									tx.workoutSet.update({
+										where: { id: s.id },
+										data: { setNumber: i + 1 },
+									}),
+								],
+					),
+				);
+			});
+		}),
+
+	/**
+	 * Finished workouts, newest first, cursor-paginated (the workout id is the
+	 * cursor; `finishedAt desc, id desc` keeps the order stable across equal
+	 * timestamps). Each row carries the history-card summary: exercise names in
+	 * position order, total set count, and total volume. Finished workouts only
+	 * contain completed sets (finish deletes the rest), so the counts are the
+	 * saved sets.
+	 */
+	history: protectedProcedure
+		.input(z.object({ cursor: z.string().nullish() }))
+		.query(async ({ ctx, input }) => {
+			const rows = await prisma.workout.findMany({
+				where: { userId: ctx.userId, finishedAt: { not: null } },
+				orderBy: [{ finishedAt: "desc" }, { id: "desc" }],
+				take: HISTORY_PAGE_SIZE + 1,
+				...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+				include: {
+					exercises: {
+						orderBy: { position: "asc" },
+						include: {
+							exercise: { select: { name: true } },
+							sets: {
+								select: { weightGrams: true, reps: true, completed: true },
+							},
+						},
+					},
+				},
+			});
+
+			const hasMore = rows.length > HISTORY_PAGE_SIZE;
+			const page = hasMore ? rows.slice(0, HISTORY_PAGE_SIZE) : rows;
+			return {
+				items: page.map((row) => {
+					const sets = row.exercises.flatMap((e) => e.sets);
+					return {
+						id: row.id,
+						name: row.name,
+						startedAt: row.startedAt,
+						// Non-null by the where filter; coalesce keeps the type honest.
+						finishedAt: row.finishedAt ?? row.startedAt,
+						/** Exercise names in position order — for the card preview line. */
+						exerciseNames: row.exercises.map((e) => e.exercise.name),
+						totalSets: sets.length,
+						volumeGrams: workoutVolumeGrams(sets),
+					};
+				}),
+				nextCursor: hasMore ? (page[page.length - 1]?.id ?? null) : null,
+			};
+		}),
+
+	/**
+	 * Full detail of one *finished* workout for the read-only history screen.
+	 * Typed NOT_FOUND for anything else — another user's workout, a non-existent
+	 * id, or a still-active workout (which lives on /workouts/active instead).
+	 */
+	get: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const row = await prisma.workout.findFirst({
+				where: { id: input.id, userId: ctx.userId, finishedAt: { not: null } },
+				include: {
+					exercises: {
+						orderBy: { position: "asc" },
+						include: {
+							exercise: { select: { name: true, muscleGroup: true } },
+							sets: { orderBy: { setNumber: "asc" } },
+						},
+					},
+				},
+			});
+			if (!row) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "WORKOUT_NOT_FOUND",
+				});
+			}
+			return {
+				id: row.id,
+				name: row.name,
+				startedAt: row.startedAt,
+				finishedAt: row.finishedAt ?? row.startedAt,
+				exercises: row.exercises.map((e) => ({
+					id: e.id,
+					exerciseId: e.exerciseId,
+					name: e.exercise.name,
+					muscleGroup: e.exercise.muscleGroup,
+					sets: e.sets.map((s) => ({
+						id: s.id,
+						setNumber: s.setNumber,
+						weightGrams: s.weightGrams,
+						reps: s.reps,
+					})),
+				})),
+			};
+		}),
+
+	/**
+	 * Per-exercise progress over the caller's finished workouts containing the
+	 * exercise, chronological (oldest → newest, chart-ready). One point per
+	 * finished workout: the best set (heaviest weight, ties by reps — see
+	 * `bestSet`) and the exercise's own volume in that session. Headline stats:
+	 * `prWeightGrams` (heaviest set ever) and `bestEst1RmGrams` (max Epley over
+	 * all sets) — both null when there are no sessions yet.
+	 *
+	 * NOT_FOUND when the exercise isn't visible to the caller (not a built-in
+	 * and not their own custom).
+	 */
+	exerciseProgress: protectedProcedure
+		.input(z.object({ exerciseId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const exercise = await prisma.exercise.findFirst({
+				where: {
+					id: input.exerciseId,
+					OR: [{ userId: null }, { userId: ctx.userId }],
+				},
+				select: { id: true, name: true, muscleGroup: true, equipment: true },
+			});
+			if (!exercise) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "EXERCISE_NOT_FOUND",
+				});
+			}
+
+			const rows = await prisma.workoutExercise.findMany({
+				where: {
+					exerciseId: exercise.id,
+					workout: { userId: ctx.userId, finishedAt: { not: null } },
+				},
+				orderBy: [{ workout: { finishedAt: "asc" } }, { workoutId: "asc" }],
+				include: {
+					workout: { select: { id: true, finishedAt: true } },
+					sets: { select: { weightGrams: true, reps: true, completed: true } },
+				},
+			});
+
+			// One point per workout. A workout normally holds an exercise once, but
+			// the schema doesn't forbid duplicates — merge their sets defensively.
+			const byWorkout = new Map<
+				string,
+				{
+					finishedAt: Date;
+					sets: {
+						weightGrams: number | null;
+						reps: number | null;
+						completed: boolean;
+					}[];
+				}
+			>();
+			for (const row of rows) {
+				const existing = byWorkout.get(row.workout.id);
+				if (existing) {
+					existing.sets.push(...row.sets);
+				} else {
+					byWorkout.set(row.workout.id, {
+						finishedAt: row.workout.finishedAt ?? new Date(0),
+						sets: [...row.sets],
+					});
+				}
+			}
+
+			const allSets = rows.flatMap((row) => row.sets);
+			const points = [...byWorkout.entries()].map(([workoutId, session]) => {
+				const best = bestSet(session.sets);
+				return {
+					workoutId,
+					finishedAt: session.finishedAt,
+					bestSetWeightGrams: best?.weightGrams ?? 0,
+					/** Reps of that best (heaviest) set. */
+					bestSetReps: best?.reps ?? 0,
+					/** This exercise's volume in that session only. */
+					volumeGrams: workoutVolumeGrams(session.sets),
+				};
+			});
+
+			const pr = bestSet(allSets);
+			const est1Rm = bestEpley1RmGrams(allSets);
+			return {
+				exercise,
+				points,
+				/** Heaviest set ever (grams) — null when no sessions yet. */
+				prWeightGrams: pr ? pr.weightGrams : null,
+				/** Max Epley estimate over all sets — null when no sessions yet. */
+				bestEst1RmGrams: points.length > 0 ? est1Rm : null,
+			};
+		}),
+
+	/**
+	 * Partial update of one set of the active workout. `weightGrams`/`reps`
+	 * accept null to clear a field; `completed: true` stamps `completedAt`,
+	 * false clears it. No-op for rows that aren't the caller's active
+	 * workout's (the updateMany convention, adapted because the owned id
+	 * lives two joins up).
+	 */
+	updateSet: protectedProcedure
+		.input(
+			z.object({
+				setId: z.string(),
+				weightGrams: z
+					.number()
+					.int()
+					.min(0)
+					.max(MAX_WEIGHT_GRAMS)
+					.nullable()
+					.optional(),
+				reps: z.number().int().min(0).max(MAX_REPS).nullable().optional(),
+				completed: z.boolean().optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const set = await prisma.workoutSet.findFirst({
+				where: {
+					id: input.setId,
+					workoutExercise: {
+						workout: { userId: ctx.userId, finishedAt: null },
+					},
+				},
+				select: { id: true },
+			});
+			if (!set) return;
+
+			const data: {
+				weightGrams?: number | null;
+				reps?: number | null;
+				completed?: boolean;
+				completedAt?: Date | null;
+			} = {};
+			if (input.weightGrams !== undefined) data.weightGrams = input.weightGrams;
+			if (input.reps !== undefined) data.reps = input.reps;
+			if (input.completed !== undefined) {
+				data.completed = input.completed;
+				data.completedAt = input.completed ? new Date() : null;
+			}
+			if (Object.keys(data).length === 0) return;
+
+			await prisma.workoutSet.update({ where: { id: set.id }, data });
+		}),
+} satisfies TRPCRouterRecord;
+
+/**
  * User preference procedures — language + currency persistence (Module G).
  *
  * `setPreferences` writes the user's language and currency to the DB and also
@@ -535,5 +1494,8 @@ export const trpcRouter = createTRPCRouter({
 	budget: budgetRouter,
 	expense: expenseRouter,
 	habit: habitRouter,
+	exercise: exerciseRouter,
+	routine: routineRouter,
+	workout: workoutRouter,
 });
 export type TRPCRouter = typeof trpcRouter;

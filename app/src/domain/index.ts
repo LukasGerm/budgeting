@@ -53,6 +53,7 @@ export {
 	getRelativeDate,
 	type RelativeDate,
 } from "./relative-date";
+export { moveItem } from "./routine";
 export {
 	computeStreaks,
 	STREAK_WINDOW_DAYS,
@@ -60,3 +61,19 @@ export {
 	type StreakResult,
 } from "./streak";
 export type { Budget, Expense } from "./types";
+export {
+	type BestSet,
+	bestEpley1RmGrams,
+	bestSet,
+	epley1RmGrams,
+	formatDuration,
+	formatKg,
+	MAX_REPS,
+	MAX_WEIGHT_GRAMS,
+	MAX_WEIGHT_KG,
+	parseKgToGrams,
+	parseReps,
+	type SetForVolume,
+	type SetWeightReps,
+	workoutVolumeGrams,
+} from "./workout";

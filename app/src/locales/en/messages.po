@@ -23,6 +23,38 @@ msgstr "{0, plural, one {# day ago} other {# days ago}}"
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# day} other {# days}}"
 
+#. placeholder {0}: exercises.length
+#: src/routes/_authed/workouts.index.tsx:242
+msgid "{0, plural, one {# exercise in your library} other {# exercises in your library}}"
+msgstr "{0, plural, one {# exercise in your library} other {# exercises in your library}}"
+
+#. placeholder {0}: routine.exerciseCount
+#: src/components/workouts/routine-card.tsx:129
+msgid "{0, plural, one {# exercise} other {# exercises}}"
+msgstr "{0, plural, one {# exercise} other {# exercises}}"
+
+#. placeholder {0}: allSets.length
+#. placeholder {0}: routine.totalTargetSets
+#. placeholder {0}: workout.totalSets
+#: src/components/workouts/routine-card.tsx:135
+#: src/components/workouts/workout-history-card.tsx:39
+#: src/routes/_authed/workouts.history.$workoutId.tsx:79
+msgid "{0, plural, one {# set} other {# sets}}"
+msgstr "{0, plural, one {# set} other {# sets}}"
+
+#. placeholder {0}: allSets.length
+#: src/routes/_authed/workouts.active.tsx:171
+msgid "{completedSets}/{0} sets"
+msgstr "{completedSets}/{0} sets"
+
+#: src/routes/_authed/workouts.active.tsx:259
+msgid "{incompleteSets, plural, one {Only completed sets are saved — # unchecked set will be discarded.} other {Only completed sets are saved — # unchecked sets will be discarded.}}"
+msgstr "{incompleteSets, plural, one {Only completed sets are saved — # unchecked set will be discarded.} other {Only completed sets are saved — # unchecked sets will be discarded.}}"
+
+#: src/components/workouts/routine-form.tsx:129
+msgid "{minutes} min"
+msgstr "{minutes} min"
+
 #: src/routes/_authed/index.tsx:136
 msgid "{money} over budget"
 msgstr "{money} over budget"
@@ -38,6 +70,10 @@ msgstr "{pctSpan} more than last cycle so far"
 #: src/routes/_authed/index.tsx:144
 msgid "{remaining} left of {budget} · day {elapsedDays} of {totalDays}"
 msgstr "{remaining} left of {budget} · day {elapsedDays} of {totalDays}"
+
+#: src/components/workouts/routine-form.tsx:127
+msgid "{seconds} s"
+msgstr "{seconds} s"
 
 #: src/components/entry-form.tsx:215
 msgid "+ Top-up"
@@ -67,6 +103,24 @@ msgstr "Add a habit"
 msgid "Add a note"
 msgstr "Add a note"
 
+#: src/i18n/use-error-message.ts:80
+msgid "Add at least one exercise to the plan."
+msgstr "Add at least one exercise to the plan."
+
+#: src/components/workouts/routine-form.tsx:199
+msgid "Add at least one exercise to your plan."
+msgstr "Add at least one exercise to your plan."
+
+#: src/components/workouts/exercise-picker.tsx:156
+#: src/components/workouts/routine-form.tsx:361
+#: src/routes/_authed/workouts.active.tsx:201
+msgid "Add exercise"
+msgstr "Add exercise"
+
+#: src/components/workouts/workout-exercise-card.tsx:276
+msgid "Add set"
+msgstr "Add set"
+
 #: src/components/spend-sheet.tsx:79
 msgid "Added {magnitudeLabel}"
 msgstr "Added {magnitudeLabel}"
@@ -75,9 +129,21 @@ msgstr "Added {magnitudeLabel}"
 msgid "Adjust"
 msgstr "Adjust"
 
+#: src/components/workouts/exercise-picker.tsx:198
+msgid "All"
+msgstr "All"
+
 #: src/components/habits/habit-card.tsx:163
 msgid "All completion history for this habit will be permanently removed. This can't be undone."
 msgstr "All completion history for this habit will be permanently removed. This can't be undone."
+
+#: src/routes/_authed/workouts.active.tsx:265
+msgid "All sets are checked off. Nice work!"
+msgstr "All sets are checked off. Nice work!"
+
+#: src/routes/_authed/workouts.index.tsx:225
+msgid "All workouts"
+msgstr "All workouts"
 
 #: src/routes/signup.tsx:113
 msgid "Already have an account? <0>Log in</0>"
@@ -87,13 +153,17 @@ msgstr "Already have an account? <0>Log in</0>"
 msgid "Amount must be non-zero."
 msgstr "Amount must be non-zero."
 
-#: src/i18n/use-error-message.ts:68
+#: src/i18n/use-error-message.ts:96
 msgid "An account with this email already exists."
 msgstr "An account with this email already exists."
 
 #: src/i18n/use-error-message.ts:44
 msgid "An adjustment amount must be non-zero."
 msgstr "An adjustment amount must be non-zero."
+
+#: src/i18n/use-error-message.ts:70
+msgid "An exercise with this name already exists."
+msgstr "An exercise with this name already exists."
 
 #: src/i18n/use-error-message.ts:52
 msgid "Anchor day must be between 1 and 31."
@@ -103,6 +173,10 @@ msgstr "Anchor day must be between 1 and 31."
 msgid "Anything you log will show up here."
 msgstr "Anything you log will show up here."
 
+#: src/components/workouts/workout-labels.tsx:46
+msgid "Arms"
+msgstr "Arms"
+
 #: src/routes/_authed/index.tsx:117
 msgid "Available today"
 msgstr "Available today"
@@ -111,13 +185,60 @@ msgstr "Available today"
 msgid "Average / day"
 msgstr "Average / day"
 
+#: src/components/workouts/workout-labels.tsx:43
+msgid "Back"
+msgstr "Back"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:78
+msgctxt "navigation"
+msgid "Back"
+msgstr "Back"
+
+#: src/routes/_authed/workouts.history.$workoutId.tsx:70
+msgid "Back to history"
+msgstr "Back to history"
+
+#: src/components/workouts/exercise-picker.tsx:367
+msgid "Back to library"
+msgstr "Back to library"
+
+#: src/routes/_authed/workouts.active.tsx:163
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:112
+#: src/routes/_authed/workouts.history.index.tsx:48
+#: src/routes/_authed/workouts.routines.$routineId.edit.tsx:76
+#: src/routes/_authed/workouts.routines.new.tsx:46
+msgid "Back to workouts"
+msgstr "Back to workouts"
+
 #: src/components/numeric-keypad.tsx:72
 msgid "Backspace"
 msgstr "Backspace"
 
+#: src/components/workouts/workout-labels.tsx:50
+msgid "Barbell"
+msgstr "Barbell"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:156
+msgid "Best set"
+msgstr "Best set"
+
+#. placeholder {0}: formatKg(session.bestSetWeightGrams)
+#. placeholder {1}: session.bestSetReps
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:190
+msgid "Best set {0} kg × {1}"
+msgstr "Best set {0} kg × {1}"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:155
+msgid "Best set weight"
+msgstr "Best set weight"
+
 #: src/components/dashboard/biggest-spends.tsx:39
 msgid "Biggest spends"
 msgstr "Biggest spends"
+
+#: src/components/workouts/workout-labels.tsx:54
+msgid "Bodyweight"
+msgstr "Bodyweight"
 
 #: src/routes/_authed/settings.tsx:301
 msgid "Budget"
@@ -135,8 +256,16 @@ msgstr "Budget updated."
 msgid "Build streaks by adding habits you want to do every day."
 msgstr "Build streaks by adding habits you want to do every day."
 
+#: src/components/workouts/workout-labels.tsx:52
+msgid "Cable"
+msgstr "Cable"
+
 #: src/components/entry-form.tsx:298
 #: src/components/habits/habit-card.tsx:171
+#: src/components/workouts/routine-card.tsx:213
+#: src/components/workouts/start-conflict-dialog.tsx:54
+#: src/routes/_authed/workouts.active.tsx:271
+#: src/routes/_authed/workouts.active.tsx:299
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -152,6 +281,10 @@ msgstr "Change your monthly budget and cycle start. Changes apply to the current
 msgid "Changes apply instantly. Your preference is saved to your account."
 msgstr "Changes apply instantly. Your preference is saved to your account."
 
+#: src/components/workouts/workout-labels.tsx:42
+msgid "Chest"
+msgstr "Chest"
+
 #: src/routes/_authed/settings.tsx:236
 msgid "CHF — Swiss Franc"
 msgstr "CHF — Swiss Franc"
@@ -160,17 +293,45 @@ msgstr "CHF — Swiss Franc"
 msgid "Choose Spend or Adjust, enter an amount and an optional note, then confirm."
 msgstr "Choose Spend or Adjust, enter an amount and an optional note, then confirm."
 
+#: src/i18n/use-error-message.ts:90
+msgid "Complete at least one set to finish the workout."
+msgstr "Complete at least one set to finish the workout."
+
+#: src/routes/_authed/workouts.active.tsx:215
+msgid "Complete at least one set to finish."
+msgstr "Complete at least one set to finish."
+
 #: src/components/habits/habit-heatmap.tsx:144
 msgid "Completion history"
 msgstr "Completion history"
+
+#: src/components/workouts/workout-labels.tsx:47
+msgid "Core"
+msgstr "Core"
+
+#: src/routes/_authed/workouts.index.tsx:173
+msgid "Create a reusable plan with your exercises, sets, and reps."
+msgstr "Create a reusable plan with your exercises, sets, and reps."
 
 #: src/routes/signup.tsx:66
 msgid "Create an account to start tracking your budget."
 msgstr "Create an account to start tracking your budget."
 
+#: src/components/workouts/exercise-picker.tsx:359
+msgid "Create and add"
+msgstr "Create and add"
+
+#: src/components/workouts/exercise-picker.tsx:270
+msgid "Create custom exercise"
+msgstr "Create custom exercise"
+
 #: src/components/habits/habit-sheet.tsx:150
 msgid "Create habit"
 msgstr "Create habit"
+
+#: src/routes/_authed/workouts.routines.new.tsx:56
+msgid "Create plan"
+msgstr "Create plan"
 
 #: src/routes/_authed/habits.tsx:81
 msgid "Create your first habit"
@@ -181,6 +342,8 @@ msgid "Creating account…"
 msgstr "Creating account…"
 
 #: src/components/habits/habit-sheet.tsx:151
+#: src/components/workouts/exercise-picker.tsx:357
+#: src/routes/_authed/workouts.routines.new.tsx:57
 msgid "Creating…"
 msgstr "Creating…"
 
@@ -205,8 +368,8 @@ msgstr "Cycle starts on day"
 msgid "Daily spend"
 msgstr "Daily spend"
 
-#: src/components/bottom-nav.tsx:51
-#: src/components/bottom-nav.tsx:52
+#: src/components/bottom-nav.tsx:63
+#: src/components/bottom-nav.tsx:64
 #: src/routes/_authed/dashboard.tsx:77
 msgid "Dashboard"
 msgstr "Dashboard"
@@ -233,8 +396,15 @@ msgstr "Decimal separator"
 #: src/components/entry-form.tsx:307
 #: src/components/habits/habit-card.tsx:125
 #: src/components/habits/habit-card.tsx:177
+#: src/components/workouts/routine-card.tsx:168
+#: src/components/workouts/routine-card.tsx:219
 msgid "Delete"
 msgstr "Delete"
+
+#. placeholder {0}: set.setNumber
+#: src/components/workouts/workout-exercise-card.tsx:251
+msgid "Delete set {0}"
+msgstr "Delete set {0}"
 
 #: src/components/entry-form.tsx:287
 msgid "Delete this entry?"
@@ -244,20 +414,69 @@ msgstr "Delete this entry?"
 msgid "Delete this habit?"
 msgstr "Delete this habit?"
 
+#: src/components/workouts/routine-card.tsx:202
+msgid "Delete this plan?"
+msgstr "Delete this plan?"
+
+#: src/components/workouts/routine-form.tsx:174
+msgid "Description (optional)"
+msgstr "Description (optional)"
+
+#: src/routes/_authed/workouts.active.tsx:302
+msgid "Discard"
+msgstr "Discard"
+
+#: src/components/workouts/start-conflict-dialog.tsx:57
+msgid "Discard and start new"
+msgstr "Discard and start new"
+
+#: src/routes/_authed/workouts.active.tsx:288
+msgid "Discard this workout?"
+msgstr "Discard this workout?"
+
+#: src/routes/_authed/workouts.active.tsx:223
+msgid "Discard workout"
+msgstr "Discard workout"
+
 #: src/components/habits/habit-heatmap.tsx:140
 msgid "done"
 msgstr "done"
+
+#: src/components/workouts/exercise-picker.tsx:276
+msgid "Done"
+msgstr "Done"
+
+#: src/components/workouts/workout-labels.tsx:51
+msgid "Dumbbell"
+msgstr "Dumbbell"
 
 #: src/routes/_authed/onboarding.tsx:96
 #: src/routes/_authed/settings.tsx:133
 msgid "e.g. 300"
 msgstr "e.g. 300"
 
+#: src/components/workouts/routine-form.tsx:319
+msgid "e.g. 8-12"
+msgstr "e.g. 8-12"
+
+#: src/components/workouts/routine-form.tsx:182
+msgid "e.g. Chest, shoulders, triceps"
+msgstr "e.g. Chest, shoulders, triceps"
+
+#: src/components/workouts/exercise-picker.tsx:291
+msgid "e.g. Hip Thrust"
+msgstr "e.g. Hip Thrust"
+
+#: src/components/workouts/routine-form.tsx:167
+msgid "e.g. Push Day A"
+msgstr "e.g. Push Day A"
+
 #: src/components/habits/habit-sheet.tsx:170
 msgid "e.g. Read for 20 minutes"
 msgstr "e.g. Read for 20 minutes"
 
 #: src/components/habits/habit-card.tsx:119
+#: src/components/workouts/routine-card.tsx:162
 msgid "Edit"
 msgstr "Edit"
 
@@ -268,6 +487,10 @@ msgstr "Edit entry"
 #: src/components/habits/habit-sheet.tsx:149
 msgid "Edit habit"
 msgstr "Edit habit"
+
+#: src/routes/_authed/workouts.routines.$routineId.edit.tsx:81
+msgid "Edit plan"
+msgstr "Edit plan"
 
 #: src/routes/_authed/settings.tsx:304
 msgid "Edits apply retroactively across the current cycle."
@@ -286,9 +509,65 @@ msgstr "Enter a name and pick an icon for your habit."
 msgid "Enter a valid amount (e.g. 300 or 1234.50)."
 msgstr "Enter a valid amount (e.g. 300 or 1234.50)."
 
+#: src/components/workouts/exercise-picker.tsx:326
+msgid "Equipment"
+msgstr "Equipment"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:130
+msgid "Est. 1RM"
+msgstr "Est. 1RM"
+
 #: src/routes/_authed/settings.tsx:233
 msgid "EUR — Euro"
 msgstr "EUR — Euro"
+
+#: src/routes/_authed/workouts.active.tsx:291
+msgid "Everything you logged in this workout will be deleted. This can't be undone."
+msgstr "Everything you logged in this workout will be deleted. This can't be undone."
+
+#: src/components/workouts/exercise-picker.tsx:130
+msgid "Exercise created and added"
+msgstr "Exercise created and added"
+
+#: src/i18n/use-error-message.ts:66
+msgid "Exercise name can't be empty."
+msgstr "Exercise name can't be empty."
+
+#: src/i18n/use-error-message.ts:68
+msgid "Exercise name must be 80 characters or fewer."
+msgstr "Exercise name must be 80 characters or fewer."
+
+#: src/components/workouts/workout-exercise-card.tsx:130
+msgid "Exercise options"
+msgstr "Exercise options"
+
+#: src/components/workouts/routine-form.tsx:194
+msgid "Exercises"
+msgstr "Exercises"
+
+#: src/routes/_authed/workouts.active.tsx:274
+msgid "Finish"
+msgstr "Finish"
+
+#: src/routes/_authed/workouts.active.tsx:211
+msgid "Finish workout"
+msgstr "Finish workout"
+
+#: src/routes/_authed/workouts.active.tsx:255
+msgid "Finish workout?"
+msgstr "Finish workout?"
+
+#: src/routes/_authed/workouts.history.index.tsx:69
+msgid "Finish your first workout and it will show up here."
+msgstr "Finish your first workout and it will show up here."
+
+#: src/routes/_authed/workouts.index.tsx:231
+msgid "Finished workouts will show up here."
+msgstr "Finished workouts will show up here."
+
+#: src/routes/_authed/workouts.index.tsx:86
+msgid "Freestyle workout"
+msgstr "Freestyle workout"
 
 #: src/routes/_authed/settings.tsx:235
 msgid "GBP — British Pound"
@@ -318,8 +597,8 @@ msgstr "Habit options"
 msgid "Habit updated"
 msgstr "Habit updated"
 
-#: src/components/bottom-nav.tsx:65
-#: src/components/bottom-nav.tsx:66
+#: src/components/bottom-nav.tsx:77
+#: src/components/bottom-nav.tsx:78
 #: src/routes/_authed/habits.tsx:56
 #: src/routes/_authed/habits.tsx:94
 msgid "Habits"
@@ -329,14 +608,14 @@ msgstr "Habits"
 msgid "Hi, {email}"
 msgstr "Hi, {email}"
 
-#: src/components/bottom-nav.tsx:58
-#: src/components/bottom-nav.tsx:59
+#: src/components/bottom-nav.tsx:70
+#: src/components/bottom-nav.tsx:71
 #: src/routes/_authed/history.tsx:62
 msgid "History"
 msgstr "History"
 
-#: src/components/bottom-nav.tsx:44
-#: src/components/bottom-nav.tsx:45
+#: src/components/bottom-nav.tsx:56
+#: src/components/bottom-nav.tsx:57
 msgid "Home"
 msgstr "Home"
 
@@ -353,9 +632,13 @@ msgstr "Ideal pace"
 msgid "If a month doesn't have your day (e.g. 31 in February), the cycle starts on the last day of that month instead."
 msgstr "If a month doesn't have your day (e.g. 31 in February), the cycle starts on the last day of that month instead."
 
-#: src/i18n/use-error-message.ts:66
+#: src/i18n/use-error-message.ts:94
 msgid "Invalid email or password."
 msgstr "Invalid email or password."
+
+#: src/components/workouts/workout-exercise-card.tsx:169
+msgid "kg"
+msgstr "kg"
 
 #: src/routes/_authed/settings.tsx:200
 msgid "Language"
@@ -365,9 +648,18 @@ msgstr "Language"
 msgid "Language & currency"
 msgstr "Language & currency"
 
+#: src/components/workouts/workout-labels.tsx:44
+msgid "Legs"
+msgstr "Legs"
+
+#: src/routes/_authed/workouts.history.index.tsx:89
+msgid "Load more"
+msgstr "Load more"
+
 #: src/routes/_authed/dashboard.tsx:67
 #: src/routes/_authed/index.tsx:78
 #: src/routes/_authed/settings.tsx:319
+#: src/routes/_authed/workouts.history.index.tsx:87
 msgid "Loading…"
 msgstr "Loading…"
 
@@ -392,6 +684,10 @@ msgstr "Log in"
 msgid "Log out"
 msgstr "Log out"
 
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:145
+msgid "Log this exercise in a workout to start tracking progress."
+msgstr "Log this exercise in a workout to start tracking progress."
+
 #: src/components/spend-sheet.tsx:77
 msgid "Logged {magnitudeLabel}"
 msgstr "Logged {magnitudeLabel}"
@@ -404,9 +700,23 @@ msgstr "Logging in…"
 msgid "Logging out…"
 msgstr "Logging out…"
 
+#: src/components/workouts/workout-labels.tsx:53
+msgid "Machine"
+msgstr "Machine"
+
 #: src/components/habits/today-checklist.tsx:66
 msgid "Mark {name} done today"
 msgstr "Mark {name} done today"
+
+#. placeholder {0}: set.setNumber
+#: src/components/workouts/workout-exercise-card.tsx:235
+msgid "Mark set {0} as done"
+msgstr "Mark set {0} as done"
+
+#. placeholder {0}: set.setNumber
+#: src/components/workouts/workout-exercise-card.tsx:234
+msgid "Mark set {0} as not done"
+msgstr "Mark set {0} as not done"
 
 #: src/routes/_authed/onboarding.tsx:89
 #: src/routes/_authed/settings.tsx:126
@@ -421,7 +731,21 @@ msgstr "Monthly totals"
 msgid "More than last cycle so far"
 msgstr "More than last cycle so far"
 
+#: src/components/workouts/routine-form.tsx:244
+msgid "Move down"
+msgstr "Move down"
+
+#: src/components/workouts/routine-form.tsx:229
+msgid "Move up"
+msgstr "Move up"
+
+#: src/components/workouts/exercise-picker.tsx:300
+msgid "Muscle group"
+msgstr "Muscle group"
+
 #: src/components/habits/habit-sheet.tsx:166
+#: src/components/workouts/exercise-picker.tsx:285
+#: src/components/workouts/routine-form.tsx:159
 msgid "Name"
 msgstr "Name"
 
@@ -433,17 +757,39 @@ msgstr "Net spending vs. the steady daily pace"
 msgid "Net total per cycle vs. your monthly budget (the dashed line)."
 msgstr "Net total per cycle vs. your monthly budget (the dashed line)."
 
+#: src/components/workouts/exercise-picker.tsx:154
+msgid "New custom exercise"
+msgstr "New custom exercise"
+
 #: src/components/habits/habit-sheet.tsx:149
 msgid "New habit"
 msgstr "New habit"
+
+#: src/routes/_authed/workouts.index.tsx:180
+#: src/routes/_authed/workouts.index.tsx:197
+#: src/routes/_authed/workouts.routines.new.tsx:51
+msgid "New plan"
+msgstr "New plan"
 
 #: src/routes/login.tsx:101
 msgid "No account yet? <0>Sign up</0>"
 msgstr "No account yet? <0>Sign up</0>"
 
+#: src/components/workouts/exercise-picker.tsx:216
+msgid "No exercises match your search."
+msgstr "No exercises match your search."
+
+#: src/routes/_authed/workouts.active.tsx:183
+msgid "No exercises yet — add one to start logging."
+msgstr "No exercises yet — add one to start logging."
+
 #: src/routes/_authed/history.tsx:114
 msgid "No expenses yet this cycle"
 msgstr "No expenses yet this cycle"
+
+#: src/routes/_authed/workouts.history.index.tsx:66
+msgid "No finished workouts yet"
+msgstr "No finished workouts yet"
 
 #: src/routes/_authed/habits.tsx:70
 msgid "No habits yet"
@@ -452,6 +798,22 @@ msgstr "No habits yet"
 #: src/components/dashboard/biggest-spends.tsx:50
 msgid "No note"
 msgstr "No note"
+
+#: src/routes/_authed/workouts.index.tsx:170
+msgid "No plans yet"
+msgstr "No plans yet"
+
+#: src/components/workouts/routine-form.tsx:126
+msgid "No rest"
+msgstr "No rest"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:142
+msgid "No sessions yet"
+msgstr "No sessions yet"
+
+#: src/components/workouts/workout-exercise-card.tsx:261
+msgid "No sets — add one below."
+msgstr "No sets — add one below."
 
 #: src/components/dashboard/daily-spend-chart.tsx:91
 msgid "No spending yet this cycle."
@@ -481,6 +843,14 @@ msgstr "On pace to finish {amount} over budget."
 msgid "On pace to finish {amount} under budget."
 msgstr "On pace to finish {amount} under budget."
 
+#: src/components/workouts/routine-form.tsx:280
+msgid "One set fewer"
+msgstr "One set fewer"
+
+#: src/components/workouts/routine-form.tsx:297
+msgid "One set more"
+msgstr "One set more"
+
 #: src/components/dashboard/daily-spend-chart.tsx:68
 msgid "Over allowance"
 msgstr "Over allowance"
@@ -498,17 +868,103 @@ msgstr "Pace this cycle"
 msgid "Password"
 msgstr "Password"
 
-#: src/i18n/use-error-message.ts:70
+#: src/i18n/use-error-message.ts:98
 msgid "Password must be at least 8 characters."
 msgstr "Password must be at least 8 characters."
 
-#: src/components/bottom-nav.tsx:72
+#: src/components/workouts/exercise-picker.tsx:312
+msgid "Pick a muscle group"
+msgstr "Pick a muscle group"
+
+#: src/components/workouts/exercise-picker.tsx:338
+msgid "Pick equipment"
+msgstr "Pick equipment"
+
+#: src/routes/_authed/workouts.routines.new.tsx:62
+msgid "Plan created"
+msgstr "Plan created"
+
+#: src/components/workouts/routine-card.tsx:105
+msgid "Plan deleted"
+msgstr "Plan deleted"
+
+#: src/i18n/use-error-message.ts:76
+msgid "Plan name can't be empty."
+msgstr "Plan name can't be empty."
+
+#: src/i18n/use-error-message.ts:78
+msgid "Plan name must be 80 characters or fewer."
+msgstr "Plan name must be 80 characters or fewer."
+
+#: src/components/workouts/routine-card.tsx:148
+msgid "Plan options"
+msgstr "Plan options"
+
+#: src/routes/_authed/workouts.routines.$routineId.edit.tsx:96
+msgid "Plan updated"
+msgstr "Plan updated"
+
+#: src/routes/_authed/workouts.index.tsx:126
+msgid "Plan, log, and track your training."
+msgstr "Plan, log, and track your training."
+
+#: src/routes/_authed/workouts.index.tsx:159
+msgid "Plans"
+msgstr "Plans"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:129
+msgid "PR (heaviest set)"
+msgstr "PR (heaviest set)"
+
+#: src/components/workouts/workout-exercise-card.tsx:166
+msgid "Previous"
+msgstr "Previous"
+
+#: src/components/bottom-nav.tsx:91
 msgid "Primary navigation"
 msgstr "Primary navigation"
 
 #: src/routes/_authed/index.tsx:160
 msgid "Recent"
 msgstr "Recent"
+
+#: src/routes/_authed/workouts.index.tsx:218
+msgid "Recent workouts"
+msgstr "Recent workouts"
+
+#: src/components/workouts/routine-form.tsx:258
+#: src/components/workouts/workout-exercise-card.tsx:154
+msgid "Remove exercise"
+msgstr "Remove exercise"
+
+#: src/components/workouts/routine-form.tsx:311
+#: src/components/workouts/workout-exercise-card.tsx:172
+msgid "Reps"
+msgstr "Reps"
+
+#. placeholder {0}: set.setNumber
+#: src/components/workouts/workout-exercise-card.tsx:221
+msgid "Reps, set {0}"
+msgstr "Reps, set {0}"
+
+#: src/components/workouts/rest-timer-bar.tsx:55
+#: src/components/workouts/routine-form.tsx:329
+msgid "Rest"
+msgstr "Rest"
+
+#. placeholder {0}: formatDuration(exercise.restSeconds)
+#: src/components/workouts/workout-exercise-card.tsx:121
+msgid "Rest {0}"
+msgstr "Rest {0}"
+
+#: src/components/workouts/start-conflict-dialog.tsx:60
+#: src/routes/_authed/workouts.index.tsx:149
+msgid "Resume"
+msgstr "Resume"
+
+#: src/components/workouts/start-conflict-dialog.tsx:46
+msgid "Resume it, or discard it and start this one instead. Discarding deletes everything you logged in the running workout."
+msgstr "Resume it, or discard it and start this one instead. Discarding deletes everything you logged in the running workout."
 
 #: src/components/expense-row.tsx:215
 #: src/routes/_authed/settings.tsx:167
@@ -520,6 +976,7 @@ msgid "Save and continue"
 msgstr "Save and continue"
 
 #: src/components/habits/habit-sheet.tsx:150
+#: src/routes/_authed/workouts.routines.$routineId.edit.tsx:88
 msgid "Save changes"
 msgstr "Save changes"
 
@@ -528,12 +985,34 @@ msgstr "Save changes"
 #: src/components/spend-sheet.tsx:141
 #: src/routes/_authed/onboarding.tsx:131
 #: src/routes/_authed/settings.tsx:167
+#: src/routes/_authed/workouts.routines.$routineId.edit.tsx:89
 msgid "Saving…"
 msgstr "Saving…"
+
+#: src/components/workouts/exercise-picker.tsx:177
+#: src/components/workouts/exercise-picker.tsx:179
+msgid "Search exercises"
+msgstr "Search exercises"
+
+#: src/components/workouts/exercise-picker.tsx:160
+msgid "Search the exercise library or create a custom exercise."
+msgstr "Search the exercise library or create a custom exercise."
 
 #: src/routes/_authed/index.tsx:163
 msgid "See all"
 msgstr "See all"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:160
+msgid "Session volume"
+msgstr "Session volume"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:171
+msgid "Sessions"
+msgstr "Sessions"
+
+#: src/components/workouts/workout-exercise-card.tsx:163
+msgid "Set"
+msgstr "Set"
 
 #: src/components/expense-row.tsx:102
 msgid "Set aside"
@@ -547,17 +1026,29 @@ msgstr "Set aside {magnitudeLabel}"
 msgid "Set up your budget"
 msgstr "Set up your budget"
 
-#: src/routes/_authed.tsx:110
+#: src/components/workouts/routine-form.tsx:267
+msgid "Sets"
+msgstr "Sets"
+
+#: src/routes/_authed.tsx:118
 #: src/routes/_authed/settings.tsx:288
 msgid "Settings"
 msgstr "Settings"
+
+#: src/components/workouts/workout-labels.tsx:45
+msgid "Shoulders"
+msgstr "Shoulders"
 
 #: src/routes/signup.tsx:63
 #: src/routes/signup.tsx:108
 msgid "Sign up"
 msgstr "Sign up"
 
-#: src/i18n/use-error-message.ts:74
+#: src/components/workouts/rest-timer-bar.tsx:74
+msgid "Skip"
+msgstr "Skip"
+
+#: src/i18n/use-error-message.ts:102
 msgid "Something went wrong. Check your connection and try again."
 msgstr "Something went wrong. Check your connection and try again."
 
@@ -582,6 +1073,14 @@ msgstr "Spent (net)"
 msgid "Spent this cycle"
 msgstr "Spent this cycle"
 
+#: src/components/workouts/routine-card.tsx:181
+msgid "Start"
+msgstr "Start"
+
+#: src/routes/_authed/workouts.index.tsx:211
+msgid "Start empty workout"
+msgstr "Start empty workout"
+
 #: src/components/habits/habit-heatmap.tsx:143
 msgid "tap to mark done"
 msgstr "tap to mark done"
@@ -594,6 +1093,10 @@ msgstr "tap to unmark"
 msgid "Tell us your monthly amount and which day of the month your cycle starts."
 msgstr "Tell us your monthly amount and which day of the month your cycle starts."
 
+#: src/i18n/use-error-message.ts:72
+msgid "That exercise doesn't exist anymore. Refresh and try again."
+msgstr "That exercise doesn't exist anymore. Refresh and try again."
+
 #: src/components/entry-form.tsx:290
 msgid "This can't be undone and your daily and monthly numbers will update."
 msgstr "This can't be undone and your daily and monthly numbers will update."
@@ -605,6 +1108,14 @@ msgstr "This cycle at a glance"
 #: src/routes/_authed/history.tsx:65
 msgid "This cycle's expenses"
 msgstr "This cycle's expenses"
+
+#: src/i18n/use-error-message.ts:82
+msgid "This plan doesn't exist anymore."
+msgstr "This plan doesn't exist anymore."
+
+#: src/i18n/use-error-message.ts:88
+msgid "This workout doesn't exist anymore."
+msgstr "This workout doesn't exist anymore."
 
 #: src/components/expense-row.tsx:75
 msgid "today"
@@ -636,13 +1147,65 @@ msgstr "Undo"
 msgid "USD — US Dollar"
 msgstr "USD — US Dollar"
 
+#: src/components/workouts/workout-exercise-card.tsx:142
+msgid "View progress"
+msgstr "View progress"
+
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:161
+msgid "Volume"
+msgstr "Volume"
+
+#. placeholder {0}: formatKg(session.volumeGrams)
+#: src/routes/_authed/workouts.exercises.$exerciseId.tsx:194
+msgid "Volume {0} kg"
+msgstr "Volume {0} kg"
+
+#. placeholder {0}: set.setNumber
+#: src/components/workouts/workout-exercise-card.tsx:209
+msgid "Weight in kilograms, set {0}"
+msgstr "Weight in kilograms, set {0}"
+
 #: src/routes/login.tsx:59
 msgid "Welcome back. Enter your details to continue."
 msgstr "Welcome back. Enter your details to continue."
 
+#: src/routes/_authed/workouts.active.tsx:134
+msgid "Workout discarded"
+msgstr "Workout discarded"
+
+#: src/routes/_authed/workouts.history.index.tsx:53
+msgid "Workout history"
+msgstr "Workout history"
+
+#: src/routes/_authed/workouts.index.tsx:137
+msgid "Workout in progress"
+msgstr "Workout in progress"
+
+#: src/routes/_authed/workouts.active.tsx:112
+msgid "Workout saved"
+msgstr "Workout saved"
+
+#: src/components/bottom-nav.tsx:84
+#: src/components/bottom-nav.tsx:85
+#: src/routes/_authed/workouts.index.tsx:123
+msgid "Workouts"
+msgstr "Workouts"
+
+#: src/components/workouts/routine-card.tsx:205
+msgid "Workouts you already logged with this plan are kept. This can't be undone."
+msgstr "Workouts you already logged with this plan are kept. This can't be undone."
+
 #: src/components/expense-row.tsx:77
 msgid "yesterday"
 msgstr "yesterday"
+
+#: src/i18n/use-error-message.ts:86
+msgid "You already have a workout in progress."
+msgstr "You already have a workout in progress."
+
+#: src/components/workouts/start-conflict-dialog.tsx:43
+msgid "You have a workout in progress"
+msgstr "You have a workout in progress"
 
 #: src/components/dashboard/monthly-trend-chart.tsx:138
 msgid "Your monthly trend will appear once you've completed a couple of cycles."

@@ -63,8 +63,8 @@ export const Route = createFileRoute("/_authed")({
 
 /**
  * Renders the routed page plus the persistent bottom nav and top app-bar.
- * Onboarding is the one authed screen without chrome — there's no budget yet
- * and it's a guided flow, so the tabs and gear would dead-end.
+ * A few full-screen routes (see FULLSCREEN_PATHS below) render without
+ * chrome.
  *
  * Layout structure (flex column, full viewport):
  *   ┌─────────────────────────────────┐  ← safe-area-inset-top (iOS status bar)
@@ -81,10 +81,18 @@ export const Route = createFileRoute("/_authed")({
  *
  * The nav clearance (`pb-[calc(4rem+...)]`) lives on the outer wrapper.
  */
+/**
+ * Authed screens rendered without the bottom nav + top app-bar:
+ * - /onboarding — guided flow; the tabs and gear would dead-end.
+ * - /workouts/active — full-screen live logging (PRD locked decision 1);
+ *   the screen brings its own sticky header with a back affordance.
+ */
+const FULLSCREEN_PATHS = ["/onboarding", "/workouts/active"];
+
 function AuthedLayout() {
 	const { pathname } = useLocation();
 	const { t } = useLingui();
-	const showNav = pathname !== "/onboarding";
+	const showNav = !FULLSCREEN_PATHS.includes(pathname);
 
 	return (
 		<div

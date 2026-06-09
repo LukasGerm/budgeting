@@ -15,3 +15,26 @@ export const EntryKind = {
 } as const
 
 export type EntryKind = (typeof EntryKind)[keyof typeof EntryKind]
+
+
+export const MuscleGroup = {
+  CHEST: 'CHEST',
+  BACK: 'BACK',
+  LEGS: 'LEGS',
+  SHOULDERS: 'SHOULDERS',
+  ARMS: 'ARMS',
+  CORE: 'CORE'
+} as const
+
+export type MuscleGroup = (typeof MuscleGroup)[keyof typeof MuscleGroup]
+
+
+export const Equipment = {
+  BARBELL: 'BARBELL',
+  DUMBBELL: 'DUMBBELL',
+  CABLE: 'CABLE',
+  MACHINE: 'MACHINE',
+  BODYWEIGHT: 'BODYWEIGHT'
+} as const
+
+export type Equipment = (typeof Equipment)[keyof typeof Equipment]

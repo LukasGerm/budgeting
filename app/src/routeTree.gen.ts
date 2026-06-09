@@ -18,8 +18,15 @@ import { Route as AuthedOnboardingRouteImport } from './routes/_authed/onboardin
 import { Route as AuthedHistoryRouteImport } from './routes/_authed/history'
 import { Route as AuthedHabitsRouteImport } from './routes/_authed/habits'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
+import { Route as AuthedWorkoutsIndexRouteImport } from './routes/_authed/workouts.index'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthedWorkoutsActiveRouteImport } from './routes/_authed/workouts.active'
+import { Route as AuthedWorkoutsHistoryIndexRouteImport } from './routes/_authed/workouts.history.index'
+import { Route as AuthedWorkoutsRoutinesNewRouteImport } from './routes/_authed/workouts.routines.new'
+import { Route as AuthedWorkoutsHistoryWorkoutIdRouteImport } from './routes/_authed/workouts.history.$workoutId'
+import { Route as AuthedWorkoutsExercisesExerciseIdRouteImport } from './routes/_authed/workouts.exercises.$exerciseId'
+import { Route as AuthedWorkoutsRoutinesRoutineIdEditRouteImport } from './routes/_authed/workouts.routines.$routineId.edit'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -65,6 +72,11 @@ const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedWorkoutsIndexRoute = AuthedWorkoutsIndexRouteImport.update({
+  id: '/workouts/',
+  path: '/workouts/',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
   id: '/api/trpc/$',
   path: '/api/trpc/$',
@@ -75,6 +87,41 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthedWorkoutsActiveRoute = AuthedWorkoutsActiveRouteImport.update({
+  id: '/workouts/active',
+  path: '/workouts/active',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedWorkoutsHistoryIndexRoute =
+  AuthedWorkoutsHistoryIndexRouteImport.update({
+    id: '/workouts/history/',
+    path: '/workouts/history/',
+    getParentRoute: () => AuthedRoute,
+  } as any)
+const AuthedWorkoutsRoutinesNewRoute =
+  AuthedWorkoutsRoutinesNewRouteImport.update({
+    id: '/workouts/routines/new',
+    path: '/workouts/routines/new',
+    getParentRoute: () => AuthedRoute,
+  } as any)
+const AuthedWorkoutsHistoryWorkoutIdRoute =
+  AuthedWorkoutsHistoryWorkoutIdRouteImport.update({
+    id: '/workouts/history/$workoutId',
+    path: '/workouts/history/$workoutId',
+    getParentRoute: () => AuthedRoute,
+  } as any)
+const AuthedWorkoutsExercisesExerciseIdRoute =
+  AuthedWorkoutsExercisesExerciseIdRouteImport.update({
+    id: '/workouts/exercises/$exerciseId',
+    path: '/workouts/exercises/$exerciseId',
+    getParentRoute: () => AuthedRoute,
+  } as any)
+const AuthedWorkoutsRoutinesRoutineIdEditRoute =
+  AuthedWorkoutsRoutinesRoutineIdEditRouteImport.update({
+    id: '/workouts/routines/$routineId/edit',
+    path: '/workouts/routines/$routineId/edit',
+    getParentRoute: () => AuthedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthedIndexRoute
@@ -85,8 +132,15 @@ export interface FileRoutesByFullPath {
   '/history': typeof AuthedHistoryRoute
   '/onboarding': typeof AuthedOnboardingRoute
   '/settings': typeof AuthedSettingsRoute
+  '/workouts/active': typeof AuthedWorkoutsActiveRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
+  '/workouts/': typeof AuthedWorkoutsIndexRoute
+  '/workouts/exercises/$exerciseId': typeof AuthedWorkoutsExercisesExerciseIdRoute
+  '/workouts/history/$workoutId': typeof AuthedWorkoutsHistoryWorkoutIdRoute
+  '/workouts/routines/new': typeof AuthedWorkoutsRoutinesNewRoute
+  '/workouts/history/': typeof AuthedWorkoutsHistoryIndexRoute
+  '/workouts/routines/$routineId/edit': typeof AuthedWorkoutsRoutinesRoutineIdEditRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -97,8 +151,15 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthedOnboardingRoute
   '/settings': typeof AuthedSettingsRoute
   '/': typeof AuthedIndexRoute
+  '/workouts/active': typeof AuthedWorkoutsActiveRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
+  '/workouts': typeof AuthedWorkoutsIndexRoute
+  '/workouts/exercises/$exerciseId': typeof AuthedWorkoutsExercisesExerciseIdRoute
+  '/workouts/history/$workoutId': typeof AuthedWorkoutsHistoryWorkoutIdRoute
+  '/workouts/routines/new': typeof AuthedWorkoutsRoutinesNewRoute
+  '/workouts/history': typeof AuthedWorkoutsHistoryIndexRoute
+  '/workouts/routines/$routineId/edit': typeof AuthedWorkoutsRoutinesRoutineIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -111,8 +172,15 @@ export interface FileRoutesById {
   '/_authed/onboarding': typeof AuthedOnboardingRoute
   '/_authed/settings': typeof AuthedSettingsRoute
   '/_authed/': typeof AuthedIndexRoute
+  '/_authed/workouts/active': typeof AuthedWorkoutsActiveRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
+  '/_authed/workouts/': typeof AuthedWorkoutsIndexRoute
+  '/_authed/workouts/exercises/$exerciseId': typeof AuthedWorkoutsExercisesExerciseIdRoute
+  '/_authed/workouts/history/$workoutId': typeof AuthedWorkoutsHistoryWorkoutIdRoute
+  '/_authed/workouts/routines/new': typeof AuthedWorkoutsRoutinesNewRoute
+  '/_authed/workouts/history/': typeof AuthedWorkoutsHistoryIndexRoute
+  '/_authed/workouts/routines/$routineId/edit': typeof AuthedWorkoutsRoutinesRoutineIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -125,8 +193,15 @@ export interface FileRouteTypes {
     | '/history'
     | '/onboarding'
     | '/settings'
+    | '/workouts/active'
     | '/api/auth/$'
     | '/api/trpc/$'
+    | '/workouts/'
+    | '/workouts/exercises/$exerciseId'
+    | '/workouts/history/$workoutId'
+    | '/workouts/routines/new'
+    | '/workouts/history/'
+    | '/workouts/routines/$routineId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -137,8 +212,15 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/settings'
     | '/'
+    | '/workouts/active'
     | '/api/auth/$'
     | '/api/trpc/$'
+    | '/workouts'
+    | '/workouts/exercises/$exerciseId'
+    | '/workouts/history/$workoutId'
+    | '/workouts/routines/new'
+    | '/workouts/history'
+    | '/workouts/routines/$routineId/edit'
   id:
     | '__root__'
     | '/_authed'
@@ -150,8 +232,15 @@ export interface FileRouteTypes {
     | '/_authed/onboarding'
     | '/_authed/settings'
     | '/_authed/'
+    | '/_authed/workouts/active'
     | '/api/auth/$'
     | '/api/trpc/$'
+    | '/_authed/workouts/'
+    | '/_authed/workouts/exercises/$exerciseId'
+    | '/_authed/workouts/history/$workoutId'
+    | '/_authed/workouts/routines/new'
+    | '/_authed/workouts/history/'
+    | '/_authed/workouts/routines/$routineId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -227,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/workouts/': {
+      id: '/_authed/workouts/'
+      path: '/workouts'
+      fullPath: '/workouts/'
+      preLoaderRoute: typeof AuthedWorkoutsIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/api/trpc/$': {
       id: '/api/trpc/$'
       path: '/api/trpc/$'
@@ -241,6 +337,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/workouts/active': {
+      id: '/_authed/workouts/active'
+      path: '/workouts/active'
+      fullPath: '/workouts/active'
+      preLoaderRoute: typeof AuthedWorkoutsActiveRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/workouts/history/': {
+      id: '/_authed/workouts/history/'
+      path: '/workouts/history'
+      fullPath: '/workouts/history/'
+      preLoaderRoute: typeof AuthedWorkoutsHistoryIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/workouts/routines/new': {
+      id: '/_authed/workouts/routines/new'
+      path: '/workouts/routines/new'
+      fullPath: '/workouts/routines/new'
+      preLoaderRoute: typeof AuthedWorkoutsRoutinesNewRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/workouts/history/$workoutId': {
+      id: '/_authed/workouts/history/$workoutId'
+      path: '/workouts/history/$workoutId'
+      fullPath: '/workouts/history/$workoutId'
+      preLoaderRoute: typeof AuthedWorkoutsHistoryWorkoutIdRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/workouts/exercises/$exerciseId': {
+      id: '/_authed/workouts/exercises/$exerciseId'
+      path: '/workouts/exercises/$exerciseId'
+      fullPath: '/workouts/exercises/$exerciseId'
+      preLoaderRoute: typeof AuthedWorkoutsExercisesExerciseIdRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/workouts/routines/$routineId/edit': {
+      id: '/_authed/workouts/routines/$routineId/edit'
+      path: '/workouts/routines/$routineId/edit'
+      fullPath: '/workouts/routines/$routineId/edit'
+      preLoaderRoute: typeof AuthedWorkoutsRoutinesRoutineIdEditRouteImport
+      parentRoute: typeof AuthedRoute
+    }
   }
 }
 
@@ -251,6 +389,13 @@ interface AuthedRouteChildren {
   AuthedOnboardingRoute: typeof AuthedOnboardingRoute
   AuthedSettingsRoute: typeof AuthedSettingsRoute
   AuthedIndexRoute: typeof AuthedIndexRoute
+  AuthedWorkoutsActiveRoute: typeof AuthedWorkoutsActiveRoute
+  AuthedWorkoutsIndexRoute: typeof AuthedWorkoutsIndexRoute
+  AuthedWorkoutsExercisesExerciseIdRoute: typeof AuthedWorkoutsExercisesExerciseIdRoute
+  AuthedWorkoutsHistoryWorkoutIdRoute: typeof AuthedWorkoutsHistoryWorkoutIdRoute
+  AuthedWorkoutsRoutinesNewRoute: typeof AuthedWorkoutsRoutinesNewRoute
+  AuthedWorkoutsHistoryIndexRoute: typeof AuthedWorkoutsHistoryIndexRoute
+  AuthedWorkoutsRoutinesRoutineIdEditRoute: typeof AuthedWorkoutsRoutinesRoutineIdEditRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
@@ -260,6 +405,15 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedOnboardingRoute: AuthedOnboardingRoute,
   AuthedSettingsRoute: AuthedSettingsRoute,
   AuthedIndexRoute: AuthedIndexRoute,
+  AuthedWorkoutsActiveRoute: AuthedWorkoutsActiveRoute,
+  AuthedWorkoutsIndexRoute: AuthedWorkoutsIndexRoute,
+  AuthedWorkoutsExercisesExerciseIdRoute:
+    AuthedWorkoutsExercisesExerciseIdRoute,
+  AuthedWorkoutsHistoryWorkoutIdRoute: AuthedWorkoutsHistoryWorkoutIdRoute,
+  AuthedWorkoutsRoutinesNewRoute: AuthedWorkoutsRoutinesNewRoute,
+  AuthedWorkoutsHistoryIndexRoute: AuthedWorkoutsHistoryIndexRoute,
+  AuthedWorkoutsRoutinesRoutineIdEditRoute:
+    AuthedWorkoutsRoutinesRoutineIdEditRoute,
 }
 
 const AuthedRouteWithChildren =
