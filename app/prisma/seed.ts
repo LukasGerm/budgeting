@@ -12,6 +12,11 @@
  *
  * Exercise names are deliberately NOT translated (PRD locked decision 3):
  * they're data, not UI chrome.
+ *
+ * Production note: deploys never run this seed — the canonical source for
+ * built-ins in deployed environments is the data migration
+ * `prisma/migrations/20260610052507_seed_builtin_exercises`. Keep the list
+ * below in sync with that migration's VALUES when adding built-ins.
  */
 
 import { prisma } from "../src/db";
